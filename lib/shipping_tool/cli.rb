@@ -45,7 +45,7 @@ class ShippingTool::CLI
   end
 
   def start
-    current_menu = "start"
+    @current_menu = "start"
     option = ""
     until option == "SEARCH" || option == "ADDRESSES" || option == "TRACK" || option == "PACKAGES" || option == "EXIT"
       banner("WELCOME")
@@ -70,7 +70,7 @@ class ShippingTool::CLI
   end
 
   def search
-    current_menu = "search"
+    @current_menu = "search"
     option = ""
     banner("ADDRESS LOOKUP AND STANDARDIZATION TOOL")
     puts "Corrects errors in street addresses, including abbreviations and missing information, and supplies ZIP Codes and ZIP Codes + 4."
@@ -131,11 +131,15 @@ class ShippingTool::CLI
 
     case option
     when "Y"
+      puts "Please enter a name to attach this address to:"
+      spacer
+      option = gets.strip.upcase
+
       puts "Address saved."
       spacer
       timer = 5
       until timer == 0
-        puts "Returning to main menu in.. #{timer}."
+        puts "Returning to main menu in #{timer}."
         timer -= 1
         sleep 1
       end
@@ -144,7 +148,7 @@ class ShippingTool::CLI
       spacer
       timer = 5
       until timer == 0
-        puts "Returning to main menu in.. #{timer}."
+        puts "Returning to main menu in #{timer}."
         timer -= 1
         sleep 1
       end
@@ -154,6 +158,7 @@ class ShippingTool::CLI
   end
 
   def addresses
+    @current_menu = "addresses"
     option = ""
     banner("ADDRESS BOOK")
     puts "1) USPS: 29851 AVENTURA STE K, RANCHO SANTA MARGARITA, CA 92688"
@@ -170,17 +175,33 @@ class ShippingTool::CLI
       puts "    ZIP Code: 92688-2014"
     when "2"
       puts "    Name    : FLATIRON SCHOOL"
-      puts "    Address : 11 BROADWAY"
+      puts "    Address : 11 BROADWAY #260"
       puts "    City    : NEW YORK"
       puts "    State   : NY"
       puts "    ZIP Code: 10004"
     end
+
+    option = ""
+    until option == "BACK" || option == "EXIT"
+      spacer
+      puts "What would you like to do?"
+      spacer
+      puts "    back: Returns to the previous menu."
+      puts "    exit: Terminates the program."
+      spacer
+      option = gets.strip.upcase
+    end
+
+    case option
+    when "BACK" then back
+    when "EXIT" then exit
+    end
   end
 
   def back
-    case option
+    case @current_menu
     when "search" then start
-
+    when "addresses" then addresses
     end
   end
 
