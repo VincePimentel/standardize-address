@@ -1,0 +1,10 @@
+require "nokogiri"
+require "open-uri"
+require "pry"
+
+require_relative "../lib/shipping_tool"
+require_relative "../lib/shipping_tool/cli"
+require_relative "../lib/shipping_tool/address"
+require_relative "../lib/shipping_tool/track"
+require_relative "../lib/shipping_tool/scraper"
+require_relative "../lib/shipping_tool/version"

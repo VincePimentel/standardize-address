@@ -1,0 +1,3 @@
+class ShippingTool::CLI
+
+end
