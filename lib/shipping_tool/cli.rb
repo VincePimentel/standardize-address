@@ -24,7 +24,8 @@ class ShippingTool::CLI
   end
 
   def test
-    ShippingTool::Request::AddressValidateRequest.address
+    test = ShippingTool::AddressValidateRequest.new({user: "253VINCE6398"})
+    binding.pry
   end
 
   def invalid
