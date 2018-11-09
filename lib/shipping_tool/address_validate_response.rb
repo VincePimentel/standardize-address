@@ -1,0 +1,3 @@
+class ShippingTool::AddressValidateResponse
+
+end

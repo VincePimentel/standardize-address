@@ -1,7 +1,7 @@
 class ShippingTool::CLI
   def login
     option = ""
-    until option == "INFO" || option == "EXIT" || option == "VINCE" || option.length >= 1
+    until option == "INFO" || option == "EXIT" || option == "VINCE" || option == "TEST" || option.length >= 1
       banner("SHIPPING TOOL LOGIN")
       puts "To use the tracker, you must be a registered user."
       puts "Please enter your user ID:"
@@ -18,8 +18,13 @@ class ShippingTool::CLI
     when "INFO" then info
     when "EXIT" then exit
     when "VINCE" then start
+    when "TEST" then test
     else invalid
     end
+  end
+
+  def test
+    ShippingTool::Request::AddressValidateRequest.address
   end
 
   def invalid

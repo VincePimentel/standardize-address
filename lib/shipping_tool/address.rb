@@ -1,0 +1,3 @@
+class ShippingTool::Address
+
+end
