@@ -87,7 +87,7 @@ class ShippingTool::AddressValidateRequest
     </#{api[:request]}>".gsub(/\n\s+/, "")
   end
 
-  def validate_address
+  def add_address
     request = ShippingTool::AddressValidateResponse.new.validate(address_signature)
     self.all << {
       name: request.css("FirmName").text,
@@ -99,23 +99,32 @@ class ShippingTool::AddressValidateRequest
       zip_5: request.css("Zip5").text,
       zip_4: request.css("Zip4").text,
       return_text: request.css("ReturnText").text
-    }
+    }.delete_if { |key, value| key.nil? || value.nil? || value.empty? }
   end
 
   def display_address
-    self.all.last.select { |key, value| !value.empty? }.each do |key, value|
-      key = key.to_s.gsub("_", " ").capitalize
-      case key
-      when "Address 1"
-        key = "Apt/Suite"
-      when "Zip 5"
-        key = "ZIP Code"
-      when "Zip 4"
-        key = "ZIP + 4"
-      when "Return text"
-        key = "Note"
+    formatted_address = Hash.new
+
+    self.all.last.each do |key, value|
+      case k
+      when :address_1
+        formatted_address["Apt/Suite"] = v
+      when :zip_5
+        formatted_address["ZIP Code"] = v
+      when :zip_4
+        formatted_address["ZIP + 4"] = v
+      when :return_text
+        formatted_address["Note"] = v
+      else
+        formatted_address[k.to_s.capitalize] = v
       end
-      puts "#{key}: #{value}"
+    end
+
+    longest_key = formatted_address.max_by { |key, value| key.length }.first
+
+    formatted_address.each do |key, value|
+      spacing = " " * (longest_key.length - key.length)
+      puts "#{key}#{spacing}: #{value}"
     end
   end
 end
