@@ -1,4 +1,10 @@
 module ShippingTool
+  module User
+    def user_id
+      "253VINCE6398"
+    end
+  end
+
   module UI
     def banner(message)
       spacer

@@ -1,7 +1,7 @@
-class ShippingTool::Address
+class ShippingTool::AddressValidation
   include ShippingTool::UI
 
-  attr_accessor :user, :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text
+  attr_accessor :user, :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
 
   @@all = Array.new
 
@@ -64,33 +64,78 @@ class ShippingTool::Address
   end
 
   def user_signature
-    self.class.reset
-    #@customer = ""
-    #@firm_name = ""
-    #@address_1 = ""
+    #self.class.reset
     @address_2 = "29851 AVENTURA STE K"
     @city = "RANCHO SANTA MARGARITA"
     @state = "CA"
-    #@urbanization = ""
     @zip_5 = "92688"
     @zip_4 = "9997"
     address_signature
+    #self.class.reset
     #Populate address with a valid one to test for user existence/validity only.
   end
 
   def valid_user?
     return !ShippingTool::Scraper.new.validate(user_signature).text.include?("80040B1A")
     #If response does not include the error code, "80040B1A", then user exists or is valid.
-    self.class.reset
   end
 
-  def validate_address
+  def validate
     ShippingTool::Scraper.new.validate(address_signature)
+  end
+
+  def parse_address
+    {
+      #customer: @customer,
+      firm_name: validate.css("FirmName").text,
+      address_1: validate.css("Address1").text,
+      address_2: validate.css("Address2").text,
+      city: validate.css("City").text,
+      state: validate.css("State").text,
+      urbanization: validate.css("Urbanization").text,
+      zip_5: validate.css("Zip5").text,
+      zip_4: validate.css("Zip4").text,
+      return_text: validate.css("ReturnText").text,
+      description: validate.css("Description").text
+    }.delete_if { |key, value| value.empty? }
+  end
+
+  def display_address
+    address = Hash.new
+
+    parse_address.each do |key, value|
+      case key
+      when :firm_name
+        address["Company"] = value
+      when :address_1
+        address["Apt/Suite"] = value
+      when :address_2
+        address["Address"] = value
+      when :zip_5
+        address["ZIP Code"] = value
+      when :zip_4
+        address["ZIP + 4"] = value
+      when :return_text
+        address["Note"] = value
+      when :description
+        address["Error"] = value
+      else
+        address[key.to_s.capitalize] = value
+      end
+    end
+
+    longest_key = address.max_by { |key, value| key.length }
+
+    address.each do |key, value|
+      spacing = " " * (longest_key.first.length - key.length)
+      puts "#{key}#{spacing}: #{value}"
+    end
+    binding.pry
   end
 
   def save_address?
 
-    binding.pry
+    #binding.pry
 
     # validated_address.each do |key, value|
     #   self.send(("#{key}="), value)
@@ -105,9 +150,5 @@ class ShippingTool::Address
     # else
     #   @@all << validated_address
     # end
-  end
-
-  def display_address
-
   end
 end

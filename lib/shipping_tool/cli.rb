@@ -3,7 +3,7 @@ class ShippingTool::CLI
 
   def login
     option = ""
-    until option == "INFO" || option == "EXIT" || option == "VINCE" || option == "TEST" || option.length >= 1
+    until option == "INFO" || option == "EXIT" || option == "VINCE" || option == "TEST" || option.length >= 4 || !!option.match(/\b[\d]+[A-Z]+[\d]+\b/)
       banner("SHIPPING TOOL LOGIN")
       puts "To use the tracker, you must be a registered user."
       puts "Please enter your user ID:"
@@ -14,15 +14,21 @@ class ShippingTool::CLI
       puts "    exit: Terminates the program."
       spacer
       option = gets.strip.upcase
-      if option
     end
 
     case option
     when "INFO" then info
     when "EXIT" then exit
-    when "VINCE" then start
-    when "TEST" then test
-    else invalid
+    when "VINCE" then start#REMOVE ME
+    when "TEST" then test#REMOVE ME
+    else
+      if !!option.match(/\b[\d]+[A-Z]+[\d]+\b/) && user_check(option)
+        @user = option
+        start
+      else
+        puts "User ID entered is incorrect or does not exist. Please try again:"
+        login
+      end
     end
   end
 
@@ -43,25 +49,27 @@ class ShippingTool::CLI
       state: "CA",
       zip_5: "94014"
     }
-    test1 = ShippingTool::Address.new(user, address1)
-    #test2 = ShippingTool::Address.new(user, address2)
+    test1 = ShippingTool::AddressValidation.new(user, address1)
+    #test2 = ShippingTool::AddressValidation.new(user, address2)
     #test1.add_to_address_list
     #test2.add_to_address_list
     #test1.validate_address
     #test1.display_address
     #test1.current_address_index
     #test1.valid_user?
+    test1.display_address
   end
+
 
   def user_check(user)
     address = {
-      address_2 = "29851 AVENTURA STE K",
-      city = "RANCHO SANTA MARGARITA",
-      state = "CA",
-      zip_5 = "92688",
-      zip_4 = "9997"
+      address_2: "29851 AVENTURA STE K",
+      city: "RANCHO SANTA MARGARITA",
+      state: "CA",
+      zip_5: "92688",
+      zip_4: "9997"
     }
-    ShippingTool::Address.new(user, address).valid_user?
+    ShippingTool::AddressValidation.new(user, address).valid_user?
   end
 
   def invalid
@@ -170,14 +178,12 @@ class ShippingTool::CLI
     option = ""
     banner("STANDARDIZED ADDRESS")
     until option == "Y" || option == "N"
-      customer = ShippingTool::Address.new()
+      ShippingTool::AddressValidationValidation.new(@user, @address).display_address
 
-
-
-      puts "    Address : 29851 AVENTURA STE K"
-      puts "    City    : RANCHO SANTA MARGARITA"
-      puts "    State   : CA"
-      puts "    ZIP Code: 92688-2014"
+      # puts "    Address : 29851 AVENTURA STE K"
+      # puts "    City    : RANCHO SANTA MARGARITA"
+      # puts "    State   : CA"
+      # puts "    ZIP Code: 92688-2014"
       spacer
 
       puts "Do you want to save this address? (y/n)"
