@@ -1,19 +1,19 @@
 class ShippingTool::Address
-  attr_accessor :user, :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4
+  attr_accessor :user, :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text
 
   @@all = Array.new
 
-  def initialize(user, data)
+  def initialize(user, address)
     @user = user
-    data.each do |key, value|
+    address.each do |key, value|
       self.send(("#{key}="), value)
     end
+    @@all << self
   end
 
   def self.all
     @@all
   end
-
 
   def self.reset
     @customer = ""
@@ -25,13 +25,8 @@ class ShippingTool::Address
     @urbanization = ""
     @zip_5 = ""
     @zip_4 = ""
+    @return_text = ""
   end
-
-  # def self.reset!
-  #   self.reset
-  #   self.search_list.clear
-  #   self.all.clear
-  # end
 
   def api
     {
@@ -88,8 +83,7 @@ class ShippingTool::Address
   end
 
   def add_to_address_list
-    valid_address = {
-      customer: @customer,
+    validated_address = {
       firm_name: validate_address.css("FirmName").text,
       address_1: validate_address.css("Address1").text,
       address_2: validate_address.css("Address2").text,
@@ -99,17 +93,21 @@ class ShippingTool::Address
       zip_5: validate_address.css("Zip5").text,
       zip_4: validate_address.css("Zip4").text,
       return_text: validate_address.css("ReturnText").text
-    }.delete_if { |key, value| key.nil? || value.nil? || value.empty? }
+    }.delete_if { |key, value| value.empty? }
 
-    if self.all.any? { |addresses| addresses[:customer] == @customer }
-      index = self.all.index { |addresses| addresses[:customer] == @customer }
-      valid_address.each do |key, value|
-        self.all[index][key] = value
-      end
-    else
-      self.all << valid_address
+    validated_address.each do |key, value|
+      self.send(("#{key}="), value)
     end
-    binding.pry
+
+    # self.class.all << validated_address
+    # if @@all.any? { |addresses| addresses[:customer] == @customer }
+    #   index = @@all.index { |addresses| addresses[:customer] == @customer }
+    #   validated_address.each do |key, value|
+    #     @@all[index][key] = value
+    #   end
+    # else
+    #   @@all << validated_address
+    # end
   end
 
   def display_address
@@ -140,4 +138,3 @@ class ShippingTool::Address
     end
   end
 end
-#binding.pry

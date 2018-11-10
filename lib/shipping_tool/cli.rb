@@ -25,16 +25,27 @@ class ShippingTool::CLI
 
   def test
     user = "253VINCE6398"
-    #data = {}
-    data = {
-        customer: "Vincent G.",
-        address_2: "8820 Washington Blvd",
-        city: "Culver",
-        state: "CA",
-        zip_5: "90232"
-      }
-    test = ShippingTool::Address.new(user, data)
-    binding.pry
+    address0 = {}
+    address1 = {
+      customer: "Vincent G.",
+      address_2: "8820 Washington Blvd",
+      city: "Culver",
+      state: "CA",
+      zip_5: "90232"
+    }
+    address2 = {
+      customer: "Alice C.",
+      address_2: "6955 Mission",
+      city: "Daly City",
+      state: "CA",
+      zip_5: "94014"
+    }
+    test1 = ShippingTool::Address.new(user, address1)
+    #test2 = ShippingTool::Address.new(user, address2)
+    #test1.add_to_address_list
+    #test2.add_to_address_list
+    test1.current_address_index
+    #binding.pry
   end
 
   def invalid
