@@ -1,4 +1,6 @@
 class ShippingTool::CLI
+  include ShippingTool::UI
+
   def login
     option = ""
     until option == "INFO" || option == "EXIT" || option == "VINCE" || option == "TEST" || option.length >= 1
@@ -12,6 +14,7 @@ class ShippingTool::CLI
       puts "    exit: Terminates the program."
       spacer
       option = gets.strip.upcase
+      if option
     end
 
     case option
@@ -44,8 +47,21 @@ class ShippingTool::CLI
     #test2 = ShippingTool::Address.new(user, address2)
     #test1.add_to_address_list
     #test2.add_to_address_list
-    test1.current_address_index
-    #binding.pry
+    #test1.validate_address
+    #test1.display_address
+    #test1.current_address_index
+    #test1.valid_user?
+  end
+
+  def user_check(user)
+    address = {
+      address_2 = "29851 AVENTURA STE K",
+      city = "RANCHO SANTA MARGARITA",
+      state = "CA",
+      zip_5 = "92688",
+      zip_4 = "9997"
+    }
+    ShippingTool::Address.new(user, address).valid_user?
   end
 
   def invalid
@@ -107,6 +123,9 @@ class ShippingTool::CLI
     puts "    exit: Terminates the program."
     spacer
 
+    puts "Enter Apartment/Suite number:"
+    address_1 = gets.strip.upcase
+    spacer
     puts "Enter the Street address:"
     address_2 = gets.strip.upcase
     spacer
@@ -117,19 +136,28 @@ class ShippingTool::CLI
     state = gets.strip.upcase
     spacer
     puts "Enter the ZIP code:"
-    zip_code = gets.strip.upcase
+    zip_5 = gets.strip.upcase
     spacer
 
     until option == "Y" || option == "N" || option == ""
       puts "Is this correct? (y/n)"
       spacer
-      puts "    Address : #{address_2}"
-      puts "    City    : #{city}"
-      puts "    State   : #{state}"
-      puts "    ZIP Code: #{zip_code}"
+      puts "    Apt/Suite: #{address_1}"
+      puts "    Address  : #{address_2}"
+      puts "    City     : #{city}"
+      puts "    State    : #{state}"
+      puts "    ZIP Code : #{zip_5}"
       spacer
-      option = gets.input.upcase
+      option = gets.strip.upcase
     end
+
+    @address = {
+      address_1: address_1,
+      address_2: address_2,
+      city: city,
+      state: state,
+      zip_5: zip_5
+    }
 
     case option
     when "Y" then standardize
@@ -139,10 +167,13 @@ class ShippingTool::CLI
   end
 
   def standardize
-    #ShippingTool::Scraper.new.standardize
     option = ""
     banner("STANDARDIZED ADDRESS")
     until option == "Y" || option == "N"
+      customer = ShippingTool::Address.new()
+
+
+
       puts "    Address : 29851 AVENTURA STE K"
       puts "    City    : RANCHO SANTA MARGARITA"
       puts "    State   : CA"
@@ -234,36 +265,6 @@ class ShippingTool::CLI
   def exit
     spacer
     puts "Goodbye! Have a nice day!"
-    spacer
-  end
-
-  def banner(message)
-    top_border_spacer(message.length)
-    puts message
-    bottom_border_spacer(message.length)
-  end
-
-  def spacer
-    puts ""
-  end
-
-  def border(length = 1)
-    puts "=" * length
-  end
-
-  def top_border_spacer(length = 1)
-    spacer
-    border(length)
-  end
-
-  def bottom_border_spacer(length = 1)
-    border(length)
-    spacer
-  end
-
-  def full_border_spacer(length = 1)
-    spacer
-    border(length)
     spacer
   end
 end
