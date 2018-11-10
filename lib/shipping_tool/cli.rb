@@ -24,7 +24,16 @@ class ShippingTool::CLI
   end
 
   def test
-    test = ShippingTool::AddressValidateRequest.new({user: "253VINCE6398"})
+    user = "253VINCE6398"
+    #data = {}
+    data = {
+        customer: "Vincent G.",
+        address_2: "8820 Washington Blvd",
+        city: "Culver",
+        state: "CA",
+        zip_5: "90232"
+      }
+    test = ShippingTool::Address.new(user, data)
     binding.pry
   end
 
