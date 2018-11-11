@@ -1,7 +1,16 @@
 module ShippingTool
   module User
-    def user_id
+    def username
+      #ENTER YOUR USPS WEB TOOLS API USERNAME BELOW AS A STRING (" ")
       "253VINCE6398"
+    end
+  end
+
+  module Navigate
+    def exit
+      spacer
+      puts "Goodbye! Have a nice day!"
+      spacer
     end
   end
 
