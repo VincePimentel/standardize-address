@@ -19,7 +19,7 @@ class ShippingTool::CLI
   def start
     @current_menu = "start"
     option = ""
-    until option == "VERIFY" || option == "ADDRESSES" || option == "TEST" || option == "EXIT"
+    until option == "VERIFY" || option == "ADDRESSES" || option == "TEST1" || option == "TEST2" || option == "EXIT"
       banner("ADDRESS STANDARDIZATION AND PACKAGE TRACKING")
       puts "What would you like to do today?"
       spacer
@@ -77,7 +77,7 @@ class ShippingTool::CLI
 
     @address_2 = ""
     until !@address_2.empty?
-      puts "Enter the Street address:"
+      puts "Enter the Street address (required):"
       @address_2 = gets.strip.upcase
       spacer
     end
@@ -133,15 +133,36 @@ class ShippingTool::CLI
     end
     spacer
 
+    i = 3
     case option
     when "Y"
       puts "Please enter a name to save this address under:"
       customer = gets.strip.split(/(\W)/).map(&:capitalize).join
       #titleize customer name
       response.save_address(customer)
-      binding.pry
+      spacer
+
+      banner("Address saved under #{customer}.")
+
+      until i == 0
+        puts "Returning to main menu in #{i}."
+        sleep 1
+        i -= 1
+      end
+
+      puts ShippingTool::AddressValidation.all
+
+      start
     when "N"
-      puts "Not saved."
+      banner("Address not saved.")
+
+      until i == 0
+        puts "Returning to main menu in #{i}."
+        sleep 1
+        i -= 1
+      end
+
+      start
     end
   end
 
@@ -150,5 +171,4 @@ class ShippingTool::CLI
     when "verify" then start
     end
   end
-
 end

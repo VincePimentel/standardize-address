@@ -9,7 +9,6 @@ class ShippingTool::AddressValidation
     address.each do |key, value|
       self.send(("#{key}="), value)
     end
-    #@@all << self
   end
 
   def self.all
@@ -129,9 +128,9 @@ class ShippingTool::AddressValidation
   end
 
   def save_address(customer)
-    if self.class.any? { |addresses| addresses[:customer] == customer }
-      i = self.class.index { |addresses| addresses[:customer] == customer }
+    if self.class.all.any? { |addresses| addresses[:customer] == customer }
       parsed_address.each do |key, value|
+        i = self.class.index { |addresses| addresses[:customer] == customer }
         self.class.all[i][key] = value
       end
     else
