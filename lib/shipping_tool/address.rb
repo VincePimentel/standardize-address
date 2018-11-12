@@ -1,5 +1,5 @@
 class ShippingTool::AddressValidation
-  include ShippingTool::User, ShippingTool::UI
+  include ShippingTool::User
 
   attr_accessor :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
 
@@ -23,7 +23,7 @@ class ShippingTool::AddressValidation
     }
   end
 
-  def address
+  def address_format
     [
       "<Address ID='0'>",
       "<FirmName>#{@firm_name}</FirmName>",
@@ -43,7 +43,7 @@ class ShippingTool::AddressValidation
     #{api[:host]}?API=
     #{api[:api]}&XML=<
     #{api[:request]} USERID='#{username}'>
-    #{address.join}</
+    #{address_format.join}</
     #{api[:request]}>
     ".gsub(/\n\s+/, "")
   end
@@ -66,37 +66,37 @@ class ShippingTool::AddressValidation
     end
   end
 
-  def response
+  def address
     ShippingTool::Scraper.new.validate(signature)
   end
 
   def valid_user?
-    return !response.css("Number").text.include?("80040B1A")
+    return !address.css("Number").text.include?("80040B1A")
   end
 
   def any_error?
-    !response.css("Number").text.empty?
+    !address.css("Number").text.empty?
   end
 
-  def formatted_response
+  def formatted_address
     {
-      firm_name: response.css("FirmName").text,
-      address_1: response.css("Address1").text,
-      address_2: response.css("Address2").text,
-      city: response.css("City").text,
-      state: response.css("State").text,
-      urbanization: response.css("Urbanization").text,
-      zip_5: response.css("Zip5").text,
-      zip_4: response.css("Zip4").text,
-      return_text: response.css("ReturnText").text,
-      description: describe_error(response.css("Number").text)
+      firm_name: address.css("FirmName").text,
+      address_1: address.css("Address1").text,
+      address_2: address.css("Address2").text,
+      city: address.css("City").text,
+      state: address.css("State").text,
+      urbanization: address.css("Urbanization").text,
+      zip_5: address.css("Zip5").text,
+      zip_4: address.css("Zip4").text,
+      return_text: address.css("ReturnText").text,
+      description: describe_error(address.css("Number").text)
     }.delete_if { |key, value| value.empty? || value.nil? }
   end
 
-  def display_response
+  def display
     address = Hash.new
 
-    formatted_response.each do |key, value|
+    formatted_address.each do |key, value|
       case key
       when :firm_name
         address["Company"] = value
@@ -125,14 +125,48 @@ class ShippingTool::AddressValidation
     end
   end
 
-  def save_response(customer)
-    if self.class.all.any? { |addresses| addresses[:customer] == customer }
-      formatted_response.each do |key, value|
-        i = self.class.index { |addresses| addresses[:customer] == customer }
-        self.class.all[i][key] = value
+  def save(customer)
+    if customer_exists?(customer)
+      formatted_address.each do |key, value|
+        self.class.all[customer_index][key] = value
       end
     else
-      self.class.all << formatted_response
+      customer_address = formatted_address
+      customer_address[:customer] = customer
+      self.class.all << customer_address
     end
+  end
+
+  def customer_exists?(customer)
+    self.class.all.any? { |addresses| addresses[:customer] == customer }
+  end
+
+  def customer_index(customer)
+    if customer_exists?(customer)
+      self.class.index { |addresses| addresses[:customer] == customer }
+    end
+  end
+
+  def list_view
+    self.class.all.each_with_index do |address, index|
+      puts "#{index + 1}) #{list_view_format(address)}"
+    end
+  end
+
+  def list_view_format(address)
+    [
+      address[:customer],
+      address[:firm_name],
+      address[:address_1],
+      address[:address_2],
+      address[:city],
+      address[:state],
+      address[:urbanization],
+      "#{address[:zip_5]}-#{address[:zip_4]}",
+    ].compact.join(", ")
+  end
+
+  def detailed_view
+
   end
 end
