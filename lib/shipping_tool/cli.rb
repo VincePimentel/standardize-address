@@ -89,26 +89,26 @@ class ShippingTool::CLI
     puts "To begin, please fill out the following:"
     spacer
 
-    print "Apartment/Suite number: "
+    puts "Apartment/Suite number: "
     @address_1 = gets.strip.upcase
     spacer
 
     @address_2 = ""
     until !@address_2.empty?
-      print "Street address (required): "
+      puts "Street address (required): "
       @address_2 = gets.strip.upcase
       spacer
     end
 
-    print "Enter the City: "
+    puts "Enter the City: "
     @city = gets.strip.upcase
     spacer
 
-    print "Enter the State: "
+    puts "Enter the State: "
     @state = gets.strip.upcase
     spacer
 
-    print "Enter the ZIP code: "
+    puts "Enter the ZIP code: "
     @zip_5 = gets.strip.upcase
     spacer
 
@@ -128,29 +128,30 @@ class ShippingTool::CLI
 
     case option
     when "Y", ""
-      address = {
-        address_1: @address_1,
-        address_2: @address_2,
-        city: @city,
-        state: @state,
-        zip_5: @zip_5
-      }
-
-      @request = ShippingTool::AddressValidation.new(address)
-
       verify_error_check
     when "N"
+      reset
       verify
     end
   end
 
   def verify_error_check
-    if @request.any_error?
+    address = {
+      address_1: @address_1,
+      address_2: @address_2,
+      city: @city,
+      state: @state,
+      zip_5: @zip_5
+    }
+
+    request = ShippingTool::AddressValidation.new(address)
+
+    if request.any_error?
       menu_options = ["Y", "", "N"]
       option = "!"
       until option_check(option, menu_options)
         banner("ADDRESS STANDARDIZATION TOOL")
-        @request.display_response
+        request.display_response
         spacer
         puts "Do you want to try again? (y/n)"
         spacer
@@ -159,20 +160,23 @@ class ShippingTool::CLI
       spacer
 
       case option
-      when "Y", "" then verify
-      when "N" then start
+      when "Y", ""
+        verify
+      when "N"
+        reset
+        start
       end
     else
-      verify_save?
+      verify_save?(request)
     end
   end
 
-  def verify_save?
-        menu_options = ["Y", "", "N"]
+  def verify_save?(request)
+    menu_options = ["Y", "", "N"]
     option = "!"
     until option_check(option, menu_options)
       banner("ADDRESS STANDARDIZATION TOOL")
-      @request.display_response
+      request.display_response
       spacer
       puts "Do you want to save this address? (y/n)"
       spacer
@@ -187,7 +191,7 @@ class ShippingTool::CLI
       puts "Please enter customer name to save this address under:"
       customer = gets.strip.split(/(\W)/).map(&:capitalize).join
       #titleize customer name
-      @request.save_response(customer)
+      request.save_response(customer)
       spacer
       puts "    Address saved under - #{customer}"
 
@@ -213,5 +217,17 @@ class ShippingTool::CLI
     case @current_menu
     when "verify" then start
     end
+  end
+
+  def reset
+    @customer = nil
+    #@firm_name = nil
+    @address_1 = nil
+    @address_2 = nil
+    @city = nil
+    @state = nil
+    @urbanization = nil
+    @zip_5 = nil
+    @zip_4 = nil
   end
 end

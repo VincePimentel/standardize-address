@@ -15,20 +15,6 @@ class ShippingTool::AddressValidation
     @@all
   end
 
-  def self.reset
-    @customer.clear
-    @firm_name.clear
-    @address_1.clear
-    @address_2.clear
-    @city.clear
-    @state.clear
-    @urbanization.clear
-    @zip_5.clear
-    @zip_4.clear
-    @return_text.clear
-    @description.clear
-  end
-
   def api
     {
       host: "https://secure.shippingapis.com/ShippingAPI.dll",
@@ -63,7 +49,7 @@ class ShippingTool::AddressValidation
   end
 
   def describe_error(number)
-    message = "entered was not found. Please try again."
+    message = "entered was not found."
 
     case number
     when "-2147219401" #AddressNotFoundError
@@ -86,7 +72,6 @@ class ShippingTool::AddressValidation
 
   def valid_user?
     return !response.css("Number").text.include?("80040B1A")
-    self.class.reset
   end
 
   def any_error?
