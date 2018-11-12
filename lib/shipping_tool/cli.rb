@@ -1,10 +1,12 @@
 class ShippingTool::CLI
-  include ShippingTool::User, ShippingTool::UI, ShippingTool::Test
+  include ShippingTool::User, ShippingTool::UI, ShippingTool::InstanceMethods, ShippingTool::Test
+
+  def initialize
+    @session = ShippingTool::AddressValidation.new(valid_address)
+  end
 
   def validate_username
-    user_check = ShippingTool::AddressValidation.new(valid_address).valid_user?
-
-    if user_check
+    if @session.valid_user?
       start
     else
       if username.empty?
@@ -12,10 +14,11 @@ class ShippingTool::CLI
         spacer
         puts "To request a username, please visit:"
         puts "https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
-      elsif !username.empty? && !user_check
+      elsif !username.empty? && !@session.valid_user?
         puts "Username is incorrect or does not exist. Please double check your username inside /lib/shipping_tool.rb."
       end
     end
+    reset
   end
 
   def start
@@ -189,21 +192,24 @@ class ShippingTool::CLI
     start
   end
 
+  def addresses
+    @current_menu = "addresses"
+    banner("ADDRESSES")
+
+
+    menu_options = (1..ShippingTool::AddressValidation.all.size).to_a
+    option = 0
+    until option_check(option, menu_options)
+
+      option = gets.strip.to_i
+    end
+  end
+
   def back
     case @current_menu
     when "verify" then start
     end
   end
 
-  def reset
-    @customer = nil
-    #@firm_name = nil
-    @address_1 = nil
-    @address_2 = nil
-    @city = nil
-    @state = nil
-    @urbanization = nil
-    @zip_5 = nil
-    @zip_4 = nil
-  end
+
 end

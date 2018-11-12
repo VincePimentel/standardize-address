@@ -1,5 +1,5 @@
 class ShippingTool::AddressValidation
-  include ShippingTool::User
+  include ShippingTool::User, ShippingTool::InstanceMethods
 
   attr_accessor :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
 
@@ -71,32 +71,18 @@ class ShippingTool::AddressValidation
   end
 
   def valid_user?
-    return !address.css("Number").text.include?("80040B1A")
+    reset
+    !address.css("Number").text.include?("80040B1A")
   end
 
   def any_error?
     !address.css("Number").text.empty?
   end
 
-  def formatted_address
-    {
-      firm_name: address.css("FirmName").text,
-      address_1: address.css("Address1").text,
-      address_2: address.css("Address2").text,
-      city: address.css("City").text,
-      state: address.css("State").text,
-      urbanization: address.css("Urbanization").text,
-      zip_5: address.css("Zip5").text,
-      zip_4: address.css("Zip4").text,
-      return_text: address.css("ReturnText").text,
-      description: describe_error(address.css("Number").text)
-    }.delete_if { |key, value| value.empty? || value.nil? }
-  end
-
-  def display
+  def parsed_address(address_hash)
     address = Hash.new
 
-    formatted_address.each do |key, value|
+    address_hash.each do |key, value|
       case key
       when :firm_name
         address["Company"] = value
@@ -117,21 +103,47 @@ class ShippingTool::AddressValidation
       end
     end
 
-    longest_key = address.max_by { |key, value| key.length }
-
     address.each do |key, value|
-      spacing = " " * (longest_key.first.length - key.length)
+      spacing = " " * (longest_key(address_hash).first.length - key.length)
       puts "    #{key}#{spacing}: #{value}"
     end
   end
 
+  def longest_key(address_hash)
+    address_hash.max_by { |key, value| key.length }
+  end
+
+  def formatted_address
+    {
+      firm_name: address.css("FirmName").text,
+      address_1: address.css("Address1").text,
+      address_2: address.css("Address2").text,
+      city: address.css("City").text,
+      state: address.css("State").text,
+      urbanization: address.css("Urbanization").text,
+      zip_5: address.css("Zip5").text,
+      zip_4: address.css("Zip4").text,
+      return_text: address.css("ReturnText").text,
+      description: describe_error(address.css("Number").text)
+    }.delete_if { |key, value| value.empty? || value.nil? }
+  end
+
+  def display
+    parsed_address(formatted_address)
+  end
+
   def save(customer)
+    customer_address = formatted_address
+
+    customer_address.delete_if do |key, value|
+      value.empty? || value.nil? || key == :return_text || key == :description
+    end
+
     if customer_exists?(customer)
-      formatted_address.each do |key, value|
+      customer_address.each do |key, value|
         self.class.all[customer_index][key] = value
       end
     else
-      customer_address = formatted_address
       customer_address[:customer] = customer
       self.class.all << customer_address
     end
@@ -153,20 +165,20 @@ class ShippingTool::AddressValidation
     end
   end
 
-  def list_view_format(address)
+  def list_view_format(address_hash)
     [
-      address[:customer],
-      address[:firm_name],
-      address[:address_1],
-      address[:address_2],
-      address[:city],
-      address[:state],
-      address[:urbanization],
-      "#{address[:zip_5]}-#{address[:zip_4]}",
-    ].compact.join(", ")
+      address_hash[:customer],
+      address_hash[:firm_name],
+      address_hash[:address_1],
+      address_hash[:address_2],
+      address_hash[:city],
+      address_hash[:state],
+      address_hash[:urbanization],
+      "#{address_hash[:zip_5]}-#{address_hash[:zip_4]}"
+    ].compact.reject(&:empty?).join(", ")
   end
 
-  def detailed_view
-
+  def detailed_view(address_hash)
+    parsed_address(address_hash)
   end
 end

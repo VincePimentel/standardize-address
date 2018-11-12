@@ -6,6 +6,22 @@ module ShippingTool
     end
   end
 
+  module InstanceMethods
+    def reset
+      @customer = nil
+      @firm_name = nil
+      @address_1 = nil
+      @address_2 = nil
+      @city = nil
+      @state = nil
+      @urbanization = nil
+      @zip_5 = nil
+      @zip_4 = nil
+      @return_text = nil
+      @description = nil
+    end
+  end
+
   module UI
     def option_check(option, menu_options)
       !([option] & menu_options).empty?
