@@ -6,22 +6,6 @@ module ShippingTool
     end
   end
 
-  module InstanceMethods
-    def reset
-      @customer = nil
-      @firm_name = nil
-      @address_1 = nil
-      @address_2 = nil
-      @city = nil
-      @state = nil
-      @urbanization = nil
-      @zip_5 = nil
-      @zip_4 = nil
-      @return_text = nil
-      @description = nil
-    end
-  end
-
   module UI
     def option_check(option, menu_options)
       !([option] & menu_options).empty?
@@ -72,12 +56,10 @@ module ShippingTool
       #Generate multiple addresses
       i = 1
       2.times do
-        address = ShippingTool::AddressValidation.new(valid_address)
-        address.save("John Doe ##{i}")
+        test_0 = ShippingTool::AddressValidation.new(valid_address)
+        test_0.save("John Doe ##{i}")
         i += 1
       end
-
-      binding.pry
     end
 
     def test_1

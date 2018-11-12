@@ -1,12 +1,12 @@
 class ShippingTool::AddressValidation
-  include ShippingTool::User, ShippingTool::InstanceMethods
+  include ShippingTool::User
 
   attr_accessor :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
 
   @@all = Array.new
 
-  def initialize(address = {})
-    address.each do |key, value|
+  def initialize(address_hash = {})
+    address_hash.each do |key, value|
       self.send(("#{key}="), value)
     end
   end
@@ -23,7 +23,7 @@ class ShippingTool::AddressValidation
     }
   end
 
-  def address_format
+  def build
     [
       "<Address ID='0'>",
       "<FirmName>#{@firm_name}</FirmName>",
@@ -43,7 +43,7 @@ class ShippingTool::AddressValidation
     #{api[:host]}?API=
     #{api[:api]}&XML=<
     #{api[:request]} USERID='#{username}'>
-    #{address_format.join}</
+    #{build.join}</
     #{api[:request]}>
     ".gsub(/\n\s+/, "")
   end
@@ -71,7 +71,7 @@ class ShippingTool::AddressValidation
   end
 
   def valid_user?
-    reset
+    #reset
     !address.css("Number").text.include?("80040B1A")
   end
 
