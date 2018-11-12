@@ -6,7 +6,12 @@ module ShippingTool
     end
   end
 
-  module Navigate
+  module Navigation
+    def option_check(option, menu_options)
+      !([option] & menu_options).empty?
+      #Tests to see if user input is a menu option.
+    end
+
     def exit
       spacer
       puts "Goodbye! Have a nice day!"

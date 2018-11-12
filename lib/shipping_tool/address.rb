@@ -16,16 +16,17 @@ class ShippingTool::AddressValidation
   end
 
   def self.reset
-    @customer = ""
-    @firm_name = ""
-    @address_1 = ""
-    @address_2 = ""
-    @city = ""
-    @state = ""
-    @urbanization = ""
-    @zip_5 = ""
-    @zip_4 = ""
-    @return_text = ""
+    @customer.clear
+    @firm_name.clear
+    @address_1.clear
+    @address_2.clear
+    @city.clear
+    @state.clear
+    @urbanization.clear
+    @zip_5.clear
+    @zip_4.clear
+    @return_text.clear
+    @description.clear
   end
 
   def api
@@ -61,44 +62,56 @@ class ShippingTool::AddressValidation
     ".gsub(/\n\s+/, "")
   end
 
-  def user_signature
-    #self.class.reset
-    @address_2 = "29851 AVENTURA STE K"
-    @city = "RANCHO SANTA MARGARITA"
-    @state = "CA"
-    @zip_5 = "92688"
-    @zip_4 = "9997"
-    signature
-    #self.class.reset
+  def describe_error(number)
+    message = "entered was not found. Please try again."
+
+    case number
+    when "-2147219401" #AddressNotFoundError
+      "Address #{message}"
+    when "-2147219400" #InvalidCityError
+      "City #{message}"
+    when "-2147219402" #"InvalidStateError
+      "State #{message}"
+    else
+      ""
+    #when "80040b1a" #AuthorizationError
+    #when "-2147219403" #MultipleAddressError
+    #when "-2147218900" #InvalidImageTypeError
+    end
   end
 
   def valid_user?
-    return !ShippingTool::Scraper.new.validate(user_signature).text.include?("80040B1A")
+    return !ShippingTool::Scraper.new.validate(signature).text.include?("80040B1A")
+    self.class.reset
   end
 
-  def validated_address
+  def response
     ShippingTool::Scraper.new.validate(signature)
   end
 
-  def parsed_address
-    {
-      firm_name: validated_address.css("FirmName").text,
-      address_1: validated_address.css("Address1").text,
-      address_2: validated_address.css("Address2").text,
-      city: validated_address.css("City").text,
-      state: validated_address.css("State").text,
-      urbanization: validated_address.css("Urbanization").text,
-      zip_5: validated_address.css("Zip5").text,
-      zip_4: validated_address.css("Zip4").text,
-      return_text: validated_address.css("ReturnText").text,
-      description: validated_address.css("Description").text
-    }.delete_if { |key, value| value.empty? }
+  def any_error?
+    response.text.include?
   end
 
-  def display_address
+  def parsed_response
+    {
+      firm_name: response.css("FirmName").text,
+      address_1: response.css("Address1").text,
+      address_2: response.css("Address2").text,
+      city: response.css("City").text,
+      state: response.css("State").text,
+      urbanization: response.css("Urbanization").text,
+      zip_5: response.css("Zip5").text,
+      zip_4: response.css("Zip4").text,
+      return_text: response.css("ReturnText").text,
+      description: describe_error(response.css("Number").text)
+    }.delete_if { |key, value| value.empty? || value.nil? }
+  end
+
+  def display_response
     address = Hash.new
 
-    parsed_address.each do |key, value|
+    parsed_response.each do |key, value|
       case key
       when :firm_name
         address["Company"] = value
@@ -127,14 +140,14 @@ class ShippingTool::AddressValidation
     end
   end
 
-  def save_address(customer)
+  def save_response(customer)
     if self.class.all.any? { |addresses| addresses[:customer] == customer }
-      parsed_address.each do |key, value|
+      parsed_response.each do |key, value|
         i = self.class.index { |addresses| addresses[:customer] == customer }
         self.class.all[i][key] = value
       end
     else
-      self.class.all << parsed_address
+      self.class.all << parsed_response
     end
   end
 end

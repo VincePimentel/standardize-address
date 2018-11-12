@@ -1,8 +1,18 @@
 class ShippingTool::CLI
-  include ShippingTool::User, ShippingTool::UI
+  include ShippingTool::User, ShippingTool::UI, ShippingTool::Navigation
 
   def validate_username
-    if ShippingTool::AddressValidation.new.valid_user?
+    address = {
+      address_2: "29851 AVENTURA STE K",
+      city: "RANCHO SANTA MARGARITA",
+      state: "CA",
+      zip_5: "92688",
+      zip_4: "9997"
+    }
+
+    user_check = ShippingTool::AddressValidation.new(address).valid_user?
+
+    if user_check
       start
     else
       if username.empty?
@@ -10,7 +20,7 @@ class ShippingTool::CLI
         spacer
         puts "To request a username, please visit:"
         puts "https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
-      elsif !username.empty? && !ShippingTool::AddressValidation.new.valid_user?
+      elsif !username.empty? && !user_check
         puts "Username is incorrect or does not exist. Please double check your username inside /lib/shipping_tool.rb."
       end
     end
@@ -18,8 +28,9 @@ class ShippingTool::CLI
 
   def start
     @current_menu = "start"
-    option = ""
-    until option == "VERIFY" || option == "ADDRESSES" || option == "TEST1" || option == "TEST2" || option == "EXIT"
+    menu_options = ["VERIFY", "ADDRESSES", "EXIT", "TEST1", "TEST2"]
+    option = "!"
+    until option_check(option, menu_options)
       banner("ADDRESS STANDARDIZATION AND PACKAGE TRACKING")
       puts "What would you like to do today?"
       spacer
@@ -35,11 +46,13 @@ class ShippingTool::CLI
     case option
     when "VERIFY" then verify
     when "ADDRESSES" then addresses
-    when "TEST1" then test1
-    when "TEST2" then test2
     #when "TRACK" then track
     #when "PACKAGES" then packages
     when "EXIT" then exit
+
+    #Test cases
+    when "TEST1" then test1
+    when "TEST2" then test2
     end
   end
 
@@ -48,7 +61,7 @@ class ShippingTool::CLI
     @city = "Culver"
     @state = "CA"
     @zip_5 = "90232"
-    verify_display_results
+    verify_request
   end
 
   def test2
@@ -56,45 +69,51 @@ class ShippingTool::CLI
     @city = "RANCHO SANTA"
     @state = "CA"
     @zip_5 = "92688"
-    verify_display_results
+    verify_request
+  end
+
+  def test3
+    @address_2 = "29851"
+    @city = "RANCHO SANTA"
+    @state = "CA"
+    @zip_5 = "926"
+    verify_request
   end
 
   def verify
     @current_menu = "verify"
-    option = ""
     banner("ADDRESS STANDARDIZATION TOOL")
     puts "Corrects errors in street addresses including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4."
     spacer
-    puts "Optional commands:"
-    spacer
-    puts "    back: Returns to the previous menu."
-    puts "    exit: Terminates the program."
+    puts "To begin, please fill out the following:"
     spacer
 
-    puts "Enter Apartment/Suite number:"
+    print "Apartment/Suite number: "
     @address_1 = gets.strip.upcase
     spacer
 
     @address_2 = ""
     until !@address_2.empty?
-      puts "Enter the Street address (required):"
+      print "Street address (required): "
       @address_2 = gets.strip.upcase
       spacer
     end
 
-    puts "Enter the City:"
+    print "Enter the City: "
     @city = gets.strip.upcase
     spacer
 
-    puts "Enter the State:"
+    print "Enter the State: "
     @state = gets.strip.upcase
     spacer
 
-    puts "Enter the ZIP code:"
+    print "Enter the ZIP code: "
     @zip_5 = gets.strip.upcase
     spacer
 
-    until option == "Y" || option == "N"
+    menu_options = ["Y", "", "N"]
+    option = "!"
+    until option_check(option, menu_options)
       banner("Is this correct? (y/n)")
       puts "    Apt/Suite: #{@address_1}"
       puts "    Address  : #{@address_2}"
@@ -106,13 +125,12 @@ class ShippingTool::CLI
     end
 
     case option
-    when "Y" then verify_display_results
+    when "Y", "" then verify_request
     when "N" then verify
     end
   end
 
-  def verify_display_results
-    option = ""
+  def verify_request
     address = {
       address_1: @address_1,
       address_2: @address_2,
@@ -120,50 +138,59 @@ class ShippingTool::CLI
       state: @state,
       zip_5: @zip_5
     }
+
+    request = ShippingTool::AddressValidation.new(address)
+
+    a = request.parsed_response
+    b = request.display_response
+    c = request.save_response("Vince")
+    binding.pry
+
+  end
+
+  def verify_display_results
     banner("STANDARDIZED ADDRESS")
-    until option == "Y" || option == "N"
-      response = ShippingTool::AddressValidation.new(address)
-      response.display_address
+
+    menu_options = ["Y", "", "N"]
+    option = "!"
+    until option_check(option, menu_options)
+
       spacer
 
       puts "Do you want to save this address? (y/n)"
       spacer
-      #binding.pry
+
       option = gets.strip.upcase
     end
     spacer
 
     i = 3
     case option
-    when "Y"
+    when "Y", ""
       puts "Please enter a name to save this address under:"
       customer = gets.strip.split(/(\W)/).map(&:capitalize).join
       #titleize customer name
-      response.save_address(customer)
+      request.save_address(customer)
       spacer
 
-      banner("Address saved under #{customer}.")
+      banner("ADDRESS SAVED UNDER: #{customer}")
 
       until i == 0
         puts "Returning to main menu in #{i}."
         sleep 1
         i -= 1
       end
-
-      puts ShippingTool::AddressValidation.all
-
-      start
     when "N"
-      banner("Address not saved.")
+      banner("ADDRESS NOT SAVED")
 
       until i == 0
         puts "Returning to main menu in #{i}."
         sleep 1
         i -= 1
       end
-
-      start
     end
+
+    start
   end
 
   def back
