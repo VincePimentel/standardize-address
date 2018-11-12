@@ -80,20 +80,20 @@ class ShippingTool::AddressValidation
     end
   end
 
-  def valid_user?
-    return !ShippingTool::Scraper.new.validate(signature).text.include?("80040B1A")
-    self.class.reset
-  end
-
   def response
     ShippingTool::Scraper.new.validate(signature)
   end
 
-  def any_error?
-    response.text.include?
+  def valid_user?
+    return !response.css("Number").text.include?("80040B1A")
+    self.class.reset
   end
 
-  def parsed_response
+  def any_error?
+    !response.css("Number").text.empty?
+  end
+
+  def formatted_response
     {
       firm_name: response.css("FirmName").text,
       address_1: response.css("Address1").text,
@@ -111,7 +111,7 @@ class ShippingTool::AddressValidation
   def display_response
     address = Hash.new
 
-    parsed_response.each do |key, value|
+    formatted_response.each do |key, value|
       case key
       when :firm_name
         address["Company"] = value
@@ -142,12 +142,12 @@ class ShippingTool::AddressValidation
 
   def save_response(customer)
     if self.class.all.any? { |addresses| addresses[:customer] == customer }
-      parsed_response.each do |key, value|
+      formatted_response.each do |key, value|
         i = self.class.index { |addresses| addresses[:customer] == customer }
         self.class.all[i][key] = value
       end
     else
-      self.class.all << parsed_response
+      self.class.all << formatted_response
     end
   end
 end
