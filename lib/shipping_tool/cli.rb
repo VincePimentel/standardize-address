@@ -29,7 +29,7 @@ class ShippingTool::CLI
       puts "What would you like to do today?"
       spacer
       puts "    verify   : Standardize an address."
-      puts "    addresses: Displays all previous address searches."
+      puts "    addresses: Displays list of all previously searched addresses."
       #puts "    track    : Track package status."
       #puts "    packages : Displays all previous package tracks."
       puts "    exit     : Terminates the program."
@@ -39,7 +39,7 @@ class ShippingTool::CLI
 
     case option
     when "VERIFY" then verify
-    when "ADDRESSES" then addresses
+    when "ADDRESSES" then address_list
     #when "TRACK" then track
     #when "PACKAGES" then packages
     when "EXIT" then exit
@@ -167,9 +167,9 @@ class ShippingTool::CLI
       end
       spacer
 
-      address.save(customer)
-      spacer
-
+      @user = address
+      @user.save(customer)
+      #ASK TO OVERWRITE IF IT EXISTS
       puts "    Address saved under: #{customer}"
       spacer
 
@@ -192,24 +192,60 @@ class ShippingTool::CLI
     start
   end
 
-  def addresses
-    @current_menu = "addresses"
-    banner("ADDRESSES")
+  def address_list
+    @current_menu = "address_list"
+    banner("STANDARDIZED ADDRESSES")
 
-    ShippingTool::AddressValidation.list_view
-    binding.pry
-    menu_options = (1..ShippingTool::AddressValidation.all.size).to_a
-    option = 0
+    @user.list_view
+    spacer
+
+    menu_options = (1..ShippingTool::AddressValidation.all.size).to_a.map(&:to_s)
+    menu_options.push("BACK", "EXIT")
+    option = "!"
     until option_check(option, menu_options)
       puts "Enter number to view detailed information about customer:"
       spacer
-      option = gets.strip.to_i
+      option = gets.strip.upcase
+    end
+    spacer
+
+    case option
+    when "BACK" then back
+    when "EXIT" then exit
+    else @user.detailed_view(option)
+    end
+  end
+
+  def detailed_address
+    @current_menu = "detailed_address"
+    banner("STANDARDIZED ADDRESS")
+
+    @user.detailed_view(option)
+    spacer
+
+    menu_options = ["BACK", "MENU", "EXIT"]
+    option = "!"
+    until option_check(option, menu_options)
+      puts "Where do you want to go?"
+      spacer
+      puts "    back: Returns to the list of addresses."
+      puts "    menu: Returns to the main menu."
+      option = gets.strip.upcase
+    end
+    spacer
+    case option
+    when "BACK" then back
+    when "MENU" then start
+    when "EXIT" then exit
     end
   end
 
   def back
     case @current_menu
-    when "verify" then start
+    when "verify","address_list"
+      start
+    when "detailed_address"
+      address_list
     end
   end
 end

@@ -141,7 +141,7 @@ class ShippingTool::AddressValidation
 
     if customer_exists?(customer)
       customer_address.each do |key, value|
-        self.class.all[customer_index][key] = value
+        self.class.all[customer_index(customer)][key] = value
       end
     else
       customer_address[:customer] = customer
@@ -155,7 +155,7 @@ class ShippingTool::AddressValidation
 
   def customer_index(customer)
     if customer_exists?(customer)
-      self.class.index { |addresses| addresses[:customer] == customer }
+      self.class.all.index { |addresses| addresses[:customer] == customer }
     end
   end
 
@@ -178,7 +178,8 @@ class ShippingTool::AddressValidation
     ].compact.reject(&:empty?).join(", ")
   end
 
-  def detailed_view(address_hash)
+  def detailed_view(index)
+    address_hash = self.class.all[index.to_i - 1]
     parsed_address(address_hash)
   end
 end
