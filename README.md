@@ -5,7 +5,7 @@ Address standardization is the process of formatting an address so that it match
 ## Installation
 
 ```
-$ gem install standardize_address
+$ gem install standardize-address
 ```
 
 ## Usage
