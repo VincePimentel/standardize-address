@@ -1,6 +1,6 @@
 # Standardize Address
 
-Address standardization is the process of formatting an address so that it matches the approved format of the national postal authority. The USPS determines the official format for addresses in the United States.
+Address standardization is the process of formatting an address so that it matches the approved format of the national postal authority. The USPS determines the official format for addresses in the United States. This utility will take user input (incomplete address) and send a request to the USPS Web Tools server. The response will then be parsed and formatted that is readable to the user. The result is a standardized address.
 
 ## Installation
 
@@ -17,7 +17,7 @@ This gem utilizes the USPS Web Tools API so a username is required. To request o
 Run the program by typing the following at the root directory (standardize-address):
 
 ```
-$ ruby bin/start
+ruby bin/start
 ```
 
 ## Development
