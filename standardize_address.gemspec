@@ -5,7 +5,7 @@ require "shipping_tool/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "shipping_tool"
-  spec.version       = ShippingTool::VERSION
+  spec.version       = StandardizeAddress::VERSION
   spec.authors       = ["'Vince Andrew Pimentel'"]
   spec.email         = ["'contact@vincep.me'"]
 

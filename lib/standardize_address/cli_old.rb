@@ -1,5 +1,5 @@
-class ShippingTool::CLI
-  include ShippingTool::User, ShippingTool::UI
+class StandardizeAddress::CLI
+  include StandardizeAddress::User, StandardizeAddress::UI
 
   def login
     option = ""
@@ -49,8 +49,8 @@ class ShippingTool::CLI
       state: "CA",
       zip_5: "94014"
     }
-    test1 = ShippingTool::AddressValidation.new(address1)
-    #test2 = ShippingTool::AddressValidation.new(address2)
+    test1 = StandardizeAddress::Verify.new(address1)
+    #test2 = StandardizeAddress::Verify.new(address2)
     #test1.add_to_address_list
     #test2.add_to_address_list
     #test1.validate_address
@@ -69,7 +69,7 @@ class ShippingTool::CLI
       zip_5: "92688",
       zip_4: "9997"
     }
-    ShippingTool::AddressValidation.new(address).valid_user?
+    StandardizeAddress::Verify.new(address).valid_user?
   end
 
   def invalid
@@ -155,7 +155,7 @@ class ShippingTool::CLI
     option = ""
     banner("STANDARDIZED ADDRESS")
     until option == "Y" || option == "N"
-      ShippingTool::AddressValidationValidation.new(@user, @address).display_address
+      StandardizeAddress::VerifyValidation.new(@user, @address).display_address
 
       # puts "    Address : 29851 AVENTURA STE K"
       # puts "    City    : RANCHO SANTA MARGARITA"

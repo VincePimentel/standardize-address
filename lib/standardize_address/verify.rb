@@ -1,5 +1,5 @@
-class ShippingTool::AddressValidation
-  include ShippingTool::User
+class StandardizeAddress::Verify
+  include StandardizeAddress::Username
 
   attr_accessor :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
 
@@ -15,15 +15,19 @@ class ShippingTool::AddressValidation
     @@all
   end
 
-  def api
+  def signature
     {
       host: "https://secure.shippingapis.com/ShippingAPI.dll",
-      api: "Verify",
+      api: "?API=",
+      name: "Verify",
+      xml: "&XML=",
       request: "AddressValidateRequest",
+      user: "USERID='#{username}'"
+      #username found in standardized_address.rb
     }
   end
 
-  def build
+  def xml_request
     [
       "<Address ID='0'>",
       "<FirmName>#{@firm_name}</FirmName>",
@@ -38,13 +42,15 @@ class ShippingTool::AddressValidation
     ]
   end
 
-  def signature
+  def request
     "
-    #{api[:host]}?API=
-    #{api[:api]}&XML=<
-    #{api[:request]} USERID='#{username}'>
-    #{build.join}</
-    #{api[:request]}>
+    #{signature[:host]}
+    #{signature[:api]}
+    #{signature[:name]}
+    #{signature[:xml]}
+    <#{signature[:request]} #{signature[:user]}>
+    #{xml_request.join}
+    </#{signature[:request]}>
     ".gsub(/\n\s+/, "")
   end
 
@@ -52,26 +58,22 @@ class ShippingTool::AddressValidation
     message = "entered was not found."
 
     case number
-    when "-2147219401" #AddressNotFoundError
+    when "-2147219401"
       "Address #{message}"
-    when "-2147219400" #InvalidCityError
+    when "-2147219400"
       "City #{message}"
-    when "-2147219402" #"InvalidStateError
+    when "-2147219402"
       "State #{message}"
     else
       ""
-    #when "80040b1a" #AuthorizationError
-    #when "-2147219403" #MultipleAddressError
-    #when "-2147218900" #InvalidImageTypeError
     end
   end
 
   def address
-    ShippingTool::Scraper.new.validate(signature)
+    StandardizeAddress::Scraper.new.validate(request)
   end
 
   def valid_user?
-    #reset
     !address.css("Number").text.include?("80040B1A")
   end
 
@@ -105,7 +107,11 @@ class ShippingTool::AddressValidation
 
     address.each do |key, value|
       spacing = " " * (longest_key(address_hash).first.length - key.length)
-      puts "    #{key}#{spacing}: #{value}"
+      if key == "Error"
+        puts "    #{key}: #{value}"
+      else
+        puts "    #{key}#{spacing}: #{value}"
+      end
     end
   end
 

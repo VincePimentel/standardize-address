@@ -1,50 +1,51 @@
-class ShippingTool::CLI
-  include ShippingTool::User, ShippingTool::UI, ShippingTool::Test
+class StandardizeAddress::CLI
+  include StandardizeAddress::Username, StandardizeAddress::Test
 
   def initialize
-    @user = ShippingTool::AddressValidation.new
+    @user = StandardizeAddress::Verify.new
   end
 
   def validate_username
     if @user.valid_user?
-      start
+      menu
     else
       if username.empty?
-        puts "Please make sure that you have saved your USPS Web Tools API Username inside /lib/shipping_tool.rb."
+        puts "Please make sure that you have saved your USPS Web Tools API Username inside /lib/standardize_address.rb."
         spacer
         puts "To request a username, please visit:"
         puts "https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
       elsif !username.empty? && !@user.valid_user?
-        puts "Username is incorrect or does not exist. Please double check your username inside /lib/shipping_tool.rb."
+        puts "Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb."
       end
     end
   end
 
-  def start
-    @current_menu = "start"
-    menu_options = ["VERIFY", "ADDRESSES", "EXIT", "TEST", "TEST1", "TEST2", "TEST3"]
+  def menu
+    @current_menu = "menu"
+    menu_options = ["VERIFY", "LIST", "EXIT", "TEST", "TEST1", "TEST2", "TEST3"]
     option = "!"
     until option_check(option, menu_options)
-      banner("ADDRESS STANDARDIZATION AND PACKAGE TRACKING")
+      banner("ADDRESS STANDARDIZATION MENU")
       puts "What would you like to do today?"
       spacer
-      puts "    verify   : Standardize an address."
-      puts "    addresses: Displays list of all previously searched addresses."
+      puts "    verify: Standardize an address."
+      puts "    list  : Displays a list of previously standardized addresses."
       #puts "    track    : Track package status."
       #puts "    packages : Displays all previous package tracks."
-      puts "    exit     : Terminates the program."
+      puts "    exit  : Terminates the program."
       spacer
       option = gets.strip.upcase
     end
+    spacer
 
     case option
     when "VERIFY" then verify
-    when "ADDRESSES" then address_list
+    when "LIST" then list
     #when "TRACK" then track
     #when "PACKAGES" then packages
     when "EXIT" then exit
 
-    #Test cases
+    #TEST CASES
     when "TEST" then test_0
     when "TEST1" then test_1
     when "TEST2" then test_2
@@ -54,14 +55,10 @@ class ShippingTool::CLI
 
   def verify
     @current_menu = "verify"
-    banner("ADDRESS STANDARDIZATION TOOL")
+    banner("ADDRESS STANDARDIZATION")
     puts "Corrects errors in street addresses including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4."
     spacer
     puts "To begin, please fill out the following:"
-    spacer
-
-    puts "Apartment/Suite number: "
-    address_1 = gets.strip.upcase
     spacer
 
     address_2 = ""
@@ -70,6 +67,10 @@ class ShippingTool::CLI
       address_2 = gets.strip.upcase
       spacer
     end
+
+    puts "Apartment/Suite number: "
+    address_1 = gets.strip.upcase
+    spacer
 
     puts "Enter the City: "
     city = gets.strip.upcase
@@ -113,13 +114,13 @@ class ShippingTool::CLI
   end
 
   def verify_error_check(address_hash)
-    address = ShippingTool::AddressValidation.new(address_hash)
+    address = StandardizeAddress::Verify.new(address_hash)
 
     if address.any_error?
       menu_options = ["Y", "", "N"]
       option = "!"
       until option_check(option, menu_options)
-        banner("ADDRESS STANDARDIZATION TOOL")
+        banner("ADDRESS STANDARDIZATION")
         address.display
         spacer
         puts "Do you want to try again? (y/n)"
@@ -132,7 +133,7 @@ class ShippingTool::CLI
       when "Y", ""
         verify
       when "N"
-        start
+        menu
       end
     else
       verify_save?(address)
@@ -143,7 +144,7 @@ class ShippingTool::CLI
     menu_options = ["Y", "", "N"]
     option = "!"
     until option_check(option, menu_options)
-      banner("ADDRESS STANDARDIZATION TOOL")
+      banner("ADDRESS STANDARDIZATION")
       puts "Address found! Standardized address:"
       spacer
       address.display
@@ -152,100 +153,148 @@ class ShippingTool::CLI
       spacer
       option = gets.strip.upcase
     end
+    spacer
 
-    banner("ADDRESS STANDARDIZATION TOOL")
-
-    i = 3
     case option
     when "Y", ""
-      customer = ""
-      until !customer.empty?
-        puts "Please enter customer name to save this address under:"
+      name = ""
+      until !name.empty?
+        puts "Please enter a name to save this address under:"
         spacer
-        #customer = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
-        customer = gets.strip.upcase
+        #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
+        name = gets.strip.upcase
       end
       spacer
 
       @user = address
-      @user.save(customer)
+      @user.save(name)
       #ASK TO OVERWRITE IF IT EXISTS
-      puts "    Address saved under: #{customer}"
+      puts "    Address saved under: #{name}"
       spacer
-
-      until i == 0
-        puts "Returning to main menu in #{i}."
-        sleep 1
-        i -= 1
-      end
+      countdown_to_menu
     when "N"
       puts "    Address not saved."
       spacer
-
-      until i == 0
-        puts "Returning to main menu in #{i}."
-        sleep 1
-        i -= 1
-      end
+      countdown_to_menu
     end
 
-    start
+    menu
   end
 
-  def address_list
-    @current_menu = "address_list"
+  def list
+    @current_menu = "list"
     banner("STANDARDIZED ADDRESSES")
 
-    @user.list_view
-    spacer
-
-    menu_options = (1..ShippingTool::AddressValidation.all.size).to_a.map(&:to_s)
-    menu_options.push("BACK", "EXIT")
-    option = "!"
-    until option_check(option, menu_options)
-      puts "Enter number to view detailed information about customer:"
+    if StandardizeAddress::Verify.all.empty?
+      puts "    No addresses currently saved."
       spacer
-      option = gets.strip.upcase
-    end
-    spacer
+      countdown_to_menu
+      menu
+    else
+      @user.list_view
+      spacer
 
-    case option
-    when "BACK" then back
-    when "EXIT" then exit
-    else @user.detailed_view(option)
+      menu_options = (1..StandardizeAddress::Verify.all.size).to_a.map(&:to_s)
+      menu_options.push("BACK", "EXIT")
+      option = "!"
+      until option_check(option, menu_options)
+        puts "Enter number to view detailed information:"
+        spacer
+        option = gets.strip
+      end
+      spacer
+
+      case option
+      when "BACK" then back
+      when "EXIT" then exit
+      else detail(option)
+      end
     end
   end
 
-  def detailed_address
-    @current_menu = "detailed_address"
+  def detail(option)
+    @current_menu = "detail"
     banner("STANDARDIZED ADDRESS")
 
     @user.detailed_view(option)
     spacer
 
-    menu_options = ["BACK", "MENU", "EXIT"]
+    menu_options = ["BACK", "", "MENU", "EXIT"]
     option = "!"
     until option_check(option, menu_options)
-      puts "Where do you want to go?"
+      puts "Where do you want to go? (back/menu/exit)"
       spacer
-      puts "    back: Returns to the list of addresses."
-      puts "    menu: Returns to the main menu."
       option = gets.strip.upcase
     end
-    spacer
+
     case option
-    when "BACK" then back
-    when "MENU" then start
+    when "BACK", "" then list
+    when "MENU" then menu
     when "EXIT" then exit
     end
   end
 
   def back
     case @current_menu
-    when "verify","address_list"
-      start
-    when "detailed_address"
-      address_list
+    when "verify","list"
+      menu
+    when "detail"
+      list
     end
+  end
+
+  def option_check(option, menu_options)
+    !([option] & menu_options).empty?
+    #Returns true/false depending on the values returned by intersecting the user input and menu option. If true, user input is valid else false.
+  end
+
+  def exit
+    menu_options = ["Y", "N"]
+    option = "!"
+    until option_check(option, menu_options)
+      puts "You will lose all standardized addresses during this session!"
+      puts "Are you sure you want to exit? (y/n)"
+      spacer
+      option = gets.strip.upcase
+    end
+    spacer
+
+    case option
+    when "Y"
+      puts "Goodbye! Have a nice day!"
+    when "N"
+      menu
+    end
+  end
+
+  def countdown_to_menu
+    i = 3
+    until i == 0
+      puts "Returning to main menu in #{i}."
+      sleep 1
+      i -= 1
+    end
+  end
+
+  def banner(message)
+    spacer
+    border(message.length)
+    puts message
+    border(message.length)
+    spacer
+  end
+
+  def spacer
+    puts ""
+  end
+
+  def border(length = 1)
+    puts "=" * length
+  end
+
+  def full_border_spacer(length = 1)
+    spacer
+    border(length)
+    spacer
   end
 end
