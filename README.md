@@ -1,28 +1,22 @@
-# StandardizeAddress
+# Standardize Address
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/standardize_address`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Address standardization is the process of formatting an address so that it matches the approved format of the national postal authority. The USPS determines the official format for addresses in the United States.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'standardize_address'
 ```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install standardize_address
+$ gem install standardize_address
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+This Gem utilizes the USPS Web Tools API so a username is required. To request one, click [here](https://www.usps.com/business/web-tools-apis/web-tools-registration.htm). After acquiring a username, head to `lib/standardize_address.rb` and put your username under `#username`.
+
+Run the program by typing the following at the root directory (standardize-address):
+
+```
+$ ruby bin/start
+```
 
 ## Development
 
@@ -32,7 +26,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/'VincePimentel'/standardize_address.
+Bug reports and pull requests are welcome on GitHub at https://github.com/VincePimentel/standardize-address.
 
 ## License
 
