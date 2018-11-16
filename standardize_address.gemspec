@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Utility to standardize any given address."
   spec.description   = "Utility to standardize/verify an address. Corrects errors in street addresses, including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4"
-  spec.homepage      = ""
+  spec.homepage      = "https://rubygems.org/gems/standardize-address"
   spec.license       = "MIT"
   spec.executables << "start"
 
