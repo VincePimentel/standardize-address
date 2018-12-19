@@ -2,7 +2,7 @@ module StandardizeAddress
   module Username
     def username
       #ENTER YOUR USPS WEB TOOLS API USERNAME BELOW AS A STRING (" ")
-      ""
+      "253VINCE6398"
     end
   end
 
