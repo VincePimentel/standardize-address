@@ -162,9 +162,7 @@ class StandardizeAddress::CLI
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      banner("ADDRESS STANDARDIZATION")
-      puts "Address found! Standardized address:"
-      spacer
+      banner("STANDARDIZED ADDRESS")
       standardized_address
       spacer
       puts "Do you want to save this address? (y/n)"
@@ -184,7 +182,6 @@ class StandardizeAddress::CLI
       end
       spacer
 
-      #@address = address
       @address.save(addressee)
       #ASK TO OVERWRITE IF IT EXISTS
       puts "    Address saved under: #{addressee}"
@@ -202,31 +199,37 @@ class StandardizeAddress::CLI
   def address_hash
     {
       "Apt/Suite": @address.address_1,
-      "Address": @address.address_2,
+      "Street": @address.address_2,
       "City": @address.city,
       "State": @address.state,
       "ZIP Code": @address.zip_5,
       "ZIP + 4": @address.zip_4,
-      "Note": @address.return_text
-    }
+      "Note": @address.return_text.split(": ")[1]
+    }.delete_if { |key, value| value.empty? }
   end
 
   def standardized_address
     address_hash.each do |key, value|
-      # spacing = " " * (longest_key(address_hash).first.length - key.length)
-      puts "    #{key}: #{value}"
+
+      spacing = " " * (longest_key(address_hash).first.length - key.length)
+
+      if key == "Apt/Suite"
+        puts "    #{key}: #{value}"
+      else
+        puts "    #{key}#{spacing}: #{value}"
+      end
     end
   end
 
-  # def longest_key(address_hash)
-  #   address_hash.max_by { |key, value| key.length }
-  # end
+  def longest_key(address_hash)
+    address_hash.max_by { |key, value| key.length }
+  end
 
   def list
     @current_menu = "list"
     banner("STANDARDIZED ADDRESSES")
 
-    if StandardizeAddress::Verify.all.empty?
+    if StandardizeAddress::Address.all.empty?
       puts "    No addresses currently saved."
       spacer
       countdown_to_menu
@@ -235,7 +238,7 @@ class StandardizeAddress::CLI
       @address.list_view
       spacer
 
-      menu_options = (1..StandardizeAddress::Verify.all.size).to_a.map(&:to_s)
+      menu_options = (1..StandardizeAddress::Address.all.size).to_a.map(&:to_s)
       menu_options.push("BACK", "EXIT")
       user_option = "!"
       until valid_option?(user_option, menu_options)
@@ -293,7 +296,7 @@ class StandardizeAddress::CLI
     menu_options = ["Y", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      puts "You will lose all standardized addresses during this session!"
+      puts "You will lose all addresses saved during this session!"
       puts "Are you sure you want to exit? (y/n)"
       spacer
       user_option = gets.strip.upcase
@@ -303,6 +306,7 @@ class StandardizeAddress::CLI
     case user_option
     when "Y"
       puts "Goodbye! Have a nice day!"
+      spacer
     when "N"
       menu
     end
@@ -339,3 +343,4 @@ class StandardizeAddress::CLI
     spacer
   end
 end
+#

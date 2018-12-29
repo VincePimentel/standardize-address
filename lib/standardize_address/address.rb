@@ -9,6 +9,41 @@ class StandardizeAddress::Address
   end
 
 
+
+
+
+  # def parsed_address(address_hash)
+  #   address = Hash.new
+  #
+  #   address_hash.each do |key, value|
+  #     case key
+  #     when :address_1
+  #       address["Apt/Suite"] = value
+  #     when :address_2
+  #       address["Address"] = value
+  #     when :zip_5
+  #       address["ZIP Code"] = value
+  #     when :zip_4
+  #       address["ZIP + 4"] = value
+  #     when :return_text
+  #       address["Note"] = value
+  #     when :description
+  #       address["Error"] = value
+  #     else
+  #       address[key.to_s.capitalize] = value
+  #     end
+  #   end
+  #
+  #   address.each do |key, value|
+  #     spacing = " " * (longest_key(address_hash).first.length - key.length)
+  #     if key == "Error"
+  #       puts "    #{key}: #{value}"
+  #     else
+  #       puts "    #{key}#{spacing}: #{value}"
+  #     end
+  #   end
+  # end
+
   def save(addressee)
     addressee_address = formatted_address
 
