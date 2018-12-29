@@ -4,7 +4,6 @@ class StandardizeAddress::Address
 
   def initialize(address_hash)
     @address = address_hash
-    binding.pry
     #@@all << address_hash
     save
   end
@@ -47,14 +46,8 @@ class StandardizeAddress::Address
   end
 
   def list_view_format(address_hash)
-    [
-      address_hash[:addressee],
-      address_hash[:address_1],
-      address_hash[:address_2],
-      address_hash[:city],
-      address_hash[:state],
-      "#{address_hash[:zip_5]}-#{address_hash[:zip_4]}"
-    ].compact.reject(&:empty?).join(", ")
+    address_hash.map { |key, value| "#{value}" }.compact.reject(&:empty?).join(", ") + "#{address_hash[:"ZIP Code"]}-#{address_hash[:"ZIP + 4"]}"
+    binding.pry
   end
 
   def detailed_view(index)
