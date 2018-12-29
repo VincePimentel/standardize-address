@@ -3,7 +3,6 @@ class StandardizeAddress::CLI
 
   def initialize
     @address = StandardizeAddress::Scraper.new
-    #binding.pry
     @address.set_attributes
     validate_username
   end
@@ -173,18 +172,22 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      addressee = ""
-      until !addressee.empty?
+      @addressee = ""
+      until !@addressee.empty?
         puts "Please enter a name to save this address under:"
         spacer
         #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
-        addressee = gets.strip.upcase
+        @addressee = gets.strip.upcase
       end
       spacer
 
-      @address.save(addressee)
+      name_address = address_hash
+      name_address["Name".to_sym] = @addressee
+
+      address = StandardizeAddress::Address.new(name_address)
+
       #ASK TO OVERWRITE IF IT EXISTS
-      puts "    Address saved under: #{addressee}"
+      puts "    Address saved under: #{@addressee}"
       spacer
       countdown_to_menu
     when "N"
@@ -198,6 +201,7 @@ class StandardizeAddress::CLI
 
   def address_hash
     {
+      #"Name": @addressee,
       "Apt/Suite": @address.address_1,
       "Street": @address.address_2,
       "City": @address.city,
@@ -205,7 +209,7 @@ class StandardizeAddress::CLI
       "ZIP Code": @address.zip_5,
       "ZIP + 4": @address.zip_4,
       "Note": @address.return_text.split(": ")[1]
-    }.delete_if { |key, value| value.empty? }
+    }.delete_if { |key, value| value.empty? || value.nil? }
   end
 
   def standardized_address

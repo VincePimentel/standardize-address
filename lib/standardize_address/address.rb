@@ -1,73 +1,42 @@
 class StandardizeAddress::Address
 
-
-
   @@all = Array.new
+
+  def initialize(address_hash)
+    @address = address_hash
+    binding.pry
+    #@@all << address_hash
+    save
+  end
 
   def self.all
     @@all
   end
 
+  def save
+    #@address = formatted_address
 
+    # @address.delete_if do |key, value|
+    #   value.empty? || value.nil? || key == :return_text || key == :description
+    # end
 
-
-
-  # def parsed_address(address_hash)
-  #   address = Hash.new
-  #
-  #   address_hash.each do |key, value|
-  #     case key
-  #     when :address_1
-  #       address["Apt/Suite"] = value
-  #     when :address_2
-  #       address["Address"] = value
-  #     when :zip_5
-  #       address["ZIP Code"] = value
-  #     when :zip_4
-  #       address["ZIP + 4"] = value
-  #     when :return_text
-  #       address["Note"] = value
-  #     when :description
-  #       address["Error"] = value
-  #     else
-  #       address[key.to_s.capitalize] = value
-  #     end
-  #   end
-  #
-  #   address.each do |key, value|
-  #     spacing = " " * (longest_key(address_hash).first.length - key.length)
-  #     if key == "Error"
-  #       puts "    #{key}: #{value}"
-  #     else
-  #       puts "    #{key}#{spacing}: #{value}"
-  #     end
-  #   end
-  # end
-
-  def save(addressee)
-    addressee_address = formatted_address
-
-    addressee_address.delete_if do |key, value|
-      value.empty? || value.nil? || key == :return_text || key == :description
-    end
-
-    if addressee_exists?(addressee)
-      addressee_address.each do |key, value|
-        self.class.all[addressee_index(addressee)][key] = value
+    if addressee_exists?
+      @address.each do |key, value|
+        self.class.all[addressee_index][key] = value
       end
     else
-      addressee_address[:addressee] = addressee
-      self.class.all << addressee_address
+      #@address[:"Name"] = @address[:"Name"]
+      self.class.all << @address
     end
   end
 
-  def addressee_exists?(addressee)
-    self.class.all.any? { |addresses| addresses[:addressee] == addressee }
+  def addressee_exists?
+    self.class.all.any? { |address| address[:"Name"] == @address[:"Name"] }
   end
 
-  def addressee_index(addressee)
-    if addressee_exists?(addressee)
-      self.class.all.index { |addresses| addresses[:addressee] == addressee }
+  def addressee_index
+    if addressee_exists?
+      self.class.all.index { |address| address[:"Name"] == @address[:"Name"] }
     end
   end
 
