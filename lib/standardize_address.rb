@@ -13,20 +13,20 @@ module StandardizeAddress
 
   module Tests
     def test_1
-      @session.address_1 = ""
-      @session.address_2 = "1600 pennsylvania"
-      @session.city = "washington"
-      @session.state = "dc"
-      @session.zip_5 = "20500"
+      @address.address_1 = ""
+      @address.address_2 = "1600 pennsylvania"
+      @address.city = "washington"
+      @address.state = "dc"
+      @address.zip_5 = "20500"
       verify_error_check
     end
 
     def test_2
-      @session.address_1 = ""
-      @session.address_2 = "1600 penns"
-      @session.city = "wash"
-      @session.state = "dc"
-      @session.zip_5 = "20500"
+      @address.address_1 = ""
+      @address.address_2 = "1600 penns"
+      @address.city = "wash"
+      @address.state = "dc"
+      @address.zip_5 = "20500"
       verify_error_check
     end
   end
@@ -34,7 +34,7 @@ end
 
 require_relative "./standardize_address"
 require_relative "./standardize_address/cli"
-require_relative "./standardize_address/address"
-require_relative "./standardize_address/verify"
 require_relative "./standardize_address/scraper"
+require_relative "./standardize_address/address"
+#require_relative "./standardize_address/verify"
 require_relative "./standardize_address/version"

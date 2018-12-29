@@ -2,12 +2,13 @@ class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    @session = StandardizeAddress::Verify.new
+    @address = StandardizeAddress::Scraper.new
+    #binding.pry
+    @address.set_attributes
     validate_username
   end
 
   def validate_username
-    binding.pry
     if username.empty?
       spacer
       puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb."
@@ -15,7 +16,7 @@ class StandardizeAddress::CLI
       puts "    To request a username, please visit:"
       puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
       spacer
-    elsif !username.empty? && !@session.valid?
+    elsif !username.empty? && !@address.valid?
       spacer
       puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb."
       spacer
@@ -103,11 +104,11 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      @session.address_1 = address_1
-      @session.address_2 = address_2
-      @session.city = city
-      @session.state = state
-      @session.zip_5 = zip_5
+      @address.address_1 = address_1
+      @address.address_2 = address_2
+      @address.city = city
+      @address.state = state
+      @address.zip_5 = zip_5
       verify_error_check
     when "N"
       verify
@@ -115,10 +116,9 @@ class StandardizeAddress::CLI
   end
 
   def verify_error_check
-    @session.set_attributes
-    binding.pry
+    @address.set_attributes
 
-    if @session.any_error?
+    if @address.any_error?
       menu_options = ["Y", "", "N"]
       user_option = "!"
       until valid_option?(user_option, menu_options)
@@ -138,15 +138,15 @@ class StandardizeAddress::CLI
         menu
       end
     else
-      verify_save?(address)
+      save_address?
     end
   end
 
   def describe_error
-    message_1 = "Error: The"
+    message_1 = "    Error: The"
     message_2 = "that you have entered was not found."
 
-    case @session.number
+    case @address.number
     when "-2147219401"
       "#{message_1} Street Address #{message_2}"
     when "-2147219400"
@@ -158,14 +158,14 @@ class StandardizeAddress::CLI
     end
   end
 
-  def verify_save?(address)
+  def save_address?
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION")
       puts "Address found! Standardized address:"
       spacer
-      address.display
+      standardized_address
       spacer
       puts "Do you want to save this address? (y/n)"
       spacer
@@ -175,19 +175,19 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      name = ""
-      until !name.empty?
+      addressee = ""
+      until !addressee.empty?
         puts "Please enter a name to save this address under:"
         spacer
         #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
-        name = gets.strip.upcase
+        addressee = gets.strip.upcase
       end
       spacer
 
-      @session = address
-      @session.save(name)
+      #@address = address
+      @address.save(addressee)
       #ASK TO OVERWRITE IF IT EXISTS
-      puts "    Address saved under: #{name}"
+      puts "    Address saved under: #{addressee}"
       spacer
       countdown_to_menu
     when "N"
@@ -199,6 +199,29 @@ class StandardizeAddress::CLI
     menu
   end
 
+  def address_hash
+    {
+      "Apt/Suite": @address.address_1,
+      "Address": @address.address_2,
+      "City": @address.city,
+      "State": @address.state,
+      "ZIP Code": @address.zip_5,
+      "ZIP + 4": @address.zip_4,
+      "Note": @address.return_text
+    }
+  end
+
+  def standardized_address
+    address_hash.each do |key, value|
+      # spacing = " " * (longest_key(address_hash).first.length - key.length)
+      puts "    #{key}: #{value}"
+    end
+  end
+
+  # def longest_key(address_hash)
+  #   address_hash.max_by { |key, value| key.length }
+  # end
+
   def list
     @current_menu = "list"
     banner("STANDARDIZED ADDRESSES")
@@ -209,7 +232,7 @@ class StandardizeAddress::CLI
       countdown_to_menu
       menu
     else
-      @session.list_view
+      @address.list_view
       spacer
 
       menu_options = (1..StandardizeAddress::Verify.all.size).to_a.map(&:to_s)
@@ -234,7 +257,7 @@ class StandardizeAddress::CLI
     @current_menu = "detail"
     banner("STANDARDIZED ADDRESS")
 
-    @session.detailed_view(option)
+    @address.detailed_view(option)
     spacer
 
     menu_options = ["BACK", "", "MENU", "EXIT"]
