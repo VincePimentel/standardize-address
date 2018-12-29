@@ -1,30 +1,34 @@
 class StandardizeAddress::CLI
-  include StandardizeAddress::Username, StandardizeAddress::Test
+  include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    @user = StandardizeAddress::Verify.new
+    @session = StandardizeAddress::Verify.new
+    validate_username
   end
 
   def validate_username
-    if @user.valid_user?
-      menu
+    binding.pry
+    if username.empty?
+      spacer
+      puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb."
+      spacer
+      puts "    To request a username, please visit:"
+      puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
+      spacer
+    elsif !username.empty? && !@session.valid?
+      spacer
+      puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb."
+      spacer
     else
-      if username.empty?
-        puts "Please make sure that you have saved your USPS Web Tools API Username inside /lib/standardize_address.rb."
-        spacer
-        puts "To request a username, please visit:"
-        puts "https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
-      elsif !username.empty? && !@user.valid_user?
-        puts "Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb."
-      end
+      menu
     end
   end
 
   def menu
     @current_menu = "menu"
-    menu_options = ["VERIFY", "LIST", "EXIT", "TEST", "TEST1", "TEST2", "TEST3"]
-    option = "!"
-    until option_check(option, menu_options)
+    menu_options = ["VERIFY", "V", "LIST", "L", "EXIT", "T1", "T2"]
+    user_option = "!"
+    until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION MENU")
       puts "What would you like to do today?"
       spacer
@@ -34,22 +38,21 @@ class StandardizeAddress::CLI
       #puts "    packages : Displays all previous package tracks."
       puts "    exit  : Terminates the program."
       spacer
-      option = gets.strip.upcase
+      user_option = gets.strip.upcase
     end
     spacer
 
-    case option
-    when "VERIFY" then verify
-    when "LIST" then list
+    case user_option
+    when "VERIFY", "V" then verify
+    when "LIST", "L" then list
     #when "TRACK" then track
     #when "PACKAGES" then packages
     when "EXIT" then exit
 
     #TEST CASES
-    when "TEST" then test_0
-    when "TEST1" then test_1
-    when "TEST2" then test_2
-    when "TEST3" then test_3
+    when "T1" then test_1
+    when "T2" then test_2
+    # when "TEST3" then test_3
     end
   end
 
@@ -85,8 +88,8 @@ class StandardizeAddress::CLI
     spacer
 
     menu_options = ["Y", "", "N"]
-    option = "!"
-    until option_check(option, menu_options)
+    user_option = "!"
+    until valid_option?(user_option, menu_options)
       puts "Is this correct? (y/n)"
       spacer
       puts "    Apt/Suite: #{address_1}"
@@ -95,41 +98,40 @@ class StandardizeAddress::CLI
       puts "    State    : #{state}"
       puts "    ZIP Code : #{zip_5}"
       spacer
-      option = gets.strip.upcase
+      user_option = gets.strip.upcase
     end
 
-    case option
+    case user_option
     when "Y", ""
-      address_hash = {
-        address_1: address_1,
-        address_2: address_2,
-        city: city,
-        state: state,
-        zip_5: zip_5
-      }
-      verify_error_check(address_hash)
+      @session.address_1 = address_1
+      @session.address_2 = address_2
+      @session.city = city
+      @session.state = state
+      @session.zip_5 = zip_5
+      verify_error_check
     when "N"
       verify
     end
   end
 
-  def verify_error_check(address_hash)
-    address = StandardizeAddress::Verify.new(address_hash)
+  def verify_error_check
+    @session.set_attributes
+    binding.pry
 
-    if address.any_error?
+    if @session.any_error?
       menu_options = ["Y", "", "N"]
-      option = "!"
-      until option_check(option, menu_options)
+      user_option = "!"
+      until valid_option?(user_option, menu_options)
         banner("ADDRESS STANDARDIZATION")
-        address.display
+        puts describe_error
         spacer
         puts "Do you want to try again? (y/n)"
         spacer
-        option = gets.strip.upcase
+        user_option = gets.strip.upcase
       end
       spacer
 
-      case option
+      case user_option
       when "Y", ""
         verify
       when "N"
@@ -140,10 +142,26 @@ class StandardizeAddress::CLI
     end
   end
 
+  def describe_error
+    message_1 = "Error: The"
+    message_2 = "that you have entered was not found."
+
+    case @session.number
+    when "-2147219401"
+      "#{message_1} Street Address #{message_2}"
+    when "-2147219400"
+      "#{message_1} City #{message_2}"
+    when "-2147219402"
+      "#{message_1} State #{message_2}"
+    else
+      "No errors found."
+    end
+  end
+
   def verify_save?(address)
     menu_options = ["Y", "", "N"]
-    option = "!"
-    until option_check(option, menu_options)
+    user_option = "!"
+    until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION")
       puts "Address found! Standardized address:"
       spacer
@@ -151,11 +169,11 @@ class StandardizeAddress::CLI
       spacer
       puts "Do you want to save this address? (y/n)"
       spacer
-      option = gets.strip.upcase
+      user_option = gets.strip.upcase
     end
     spacer
 
-    case option
+    case user_option
     when "Y", ""
       name = ""
       until !name.empty?
@@ -166,8 +184,8 @@ class StandardizeAddress::CLI
       end
       spacer
 
-      @user = address
-      @user.save(name)
+      @session = address
+      @session.save(name)
       #ASK TO OVERWRITE IF IT EXISTS
       puts "    Address saved under: #{name}"
       spacer
@@ -191,20 +209,20 @@ class StandardizeAddress::CLI
       countdown_to_menu
       menu
     else
-      @user.list_view
+      @session.list_view
       spacer
 
       menu_options = (1..StandardizeAddress::Verify.all.size).to_a.map(&:to_s)
       menu_options.push("BACK", "EXIT")
-      option = "!"
-      until option_check(option, menu_options)
+      user_option = "!"
+      until valid_option?(user_option, menu_options)
         puts "Enter number to view detailed information:"
         spacer
-        option = gets.strip
+        user_option = gets.strip
       end
       spacer
 
-      case option
+      case user_option
       when "BACK" then back
       when "EXIT" then exit
       else detail(option)
@@ -216,18 +234,18 @@ class StandardizeAddress::CLI
     @current_menu = "detail"
     banner("STANDARDIZED ADDRESS")
 
-    @user.detailed_view(option)
+    @session.detailed_view(option)
     spacer
 
     menu_options = ["BACK", "", "MENU", "EXIT"]
-    option = "!"
-    until option_check(option, menu_options)
+    user_option = "!"
+    until valid_option?(user_option, menu_options)
       puts "Where do you want to go? (back/menu/exit)"
       spacer
-      option = gets.strip.upcase
+      user_option = gets.strip.upcase
     end
 
-    case option
+    case user_option
     when "BACK", "" then list
     when "MENU" then menu
     when "EXIT" then exit
@@ -243,23 +261,23 @@ class StandardizeAddress::CLI
     end
   end
 
-  def option_check(option, menu_options)
-    !([option] & menu_options).empty?
+  def valid_option?(user_option, menu_options)
+    !([user_option] & menu_options).empty?
     #Returns true/false depending on the values returned by intersecting the user input and menu option. If true, user input is valid else false.
   end
 
   def exit
     menu_options = ["Y", "N"]
-    option = "!"
-    until option_check(option, menu_options)
+    user_option = "!"
+    until valid_option?(user_option, menu_options)
       puts "You will lose all standardized addresses during this session!"
       puts "Are you sure you want to exit? (y/n)"
       spacer
-      option = gets.strip.upcase
+      user_option = gets.strip.upcase
     end
     spacer
 
-    case option
+    case user_option
     when "Y"
       puts "Goodbye! Have a nice day!"
     when "N"

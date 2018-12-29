@@ -1,15 +1,15 @@
 class StandardizeAddress::Verify
   include StandardizeAddress::Username
 
-  attr_accessor :customer, :firm_name, :address_1, :address_2, :city, :state, :urbanization, :zip_5, :zip_4, :return_text, :description
+  attr_accessor :addressee, :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
 
   @@all = Array.new
 
-  def initialize(address_hash = {})
-    address_hash.each do |key, value|
-      self.send(("#{key}="), value)
-    end
-  end
+  # def initialize(address_hash = {})
+  #   address_hash.each do |key, value|
+  #     self.send("#{key}=", value)
+  #   end
+  # end
 
   def self.all
     @@all
@@ -30,14 +30,12 @@ class StandardizeAddress::Verify
   def xml_request
     [
       "<Address ID='0'>",
-      "<FirmName>#{@firm_name}</FirmName>",
-      "<Address1>#{@address_1}</Address1>",
-      "<Address2>#{@address_2}</Address2>",
-      "<City>#{@city}</City>",
-      "<State>#{@state}</State>",
-      "<Urbanization>#{@urbanization}</Urbanization>",
-      "<Zip5>#{@zip_5}</Zip5>",
-      "<Zip4>#{@zip_4}</Zip4>",
+      "<Address1>#{self.address_1}</Address1>",
+      "<Address2>#{self.address_2}</Address2>",
+      "<City>#{self.city}</City>",
+      "<State>#{self.state}</State>",
+      "<Zip5>#{self.zip_5}</Zip5>",
+      "<Zip4>#{self.zip_4}</Zip4>",
       "</Address>"
     ]
   end
@@ -54,31 +52,40 @@ class StandardizeAddress::Verify
     ".gsub(/\n\s+/, "")
   end
 
-  def describe_error(number)
-    message = "entered was not found."
-
-    case number
-    when "-2147219401"
-      "Address #{message}"
-    when "-2147219400"
-      "City #{message}"
-    when "-2147219402"
-      "State #{message}"
-    else
-      ""
-    end
-  end
-
   def address
     StandardizeAddress::Scraper.new.validate(request)
   end
 
-  def valid_user?
-    !address.css("Number").text.include?("80040B1A")
+  def set_attributes
+    self.address_1 = address.css("Address1").text
+    self.address_2 = address.css("Address2").text
+    self.city = address.css("City").text
+    self.state = address.css("State").text
+    self.zip_5 = address.css("Zip5").text
+    self.zip_4 = address.css("Zip4").text
+    self.return_text = address.css("ReturnText").text
+    self.number = address.css("Number").text
+  end
+
+  def formatted_address
+    {
+      address_1: address.css("Address1").text,
+      address_2: address.css("Address2").text,
+      city: address.css("City").text,
+      state: address.css("State").text,
+      zip_5: address.css("Zip5").text,
+      zip_4: address.css("Zip4").text,
+      return_text: address.css("ReturnText").text,
+      number: address.css("Number").text
+    }.delete_if { |key, value| value.empty? || value.nil? }
+  end
+
+  def valid?
+    !self.number.include?("80040B1A")
   end
 
   def any_error?
-    !address.css("Number").text.empty?
+    !self.number.empty?
   end
 
   def parsed_address(address_hash)
@@ -86,8 +93,6 @@ class StandardizeAddress::Verify
 
     address_hash.each do |key, value|
       case key
-      when :firm_name
-        address["Company"] = value
       when :address_1
         address["Apt/Suite"] = value
       when :address_2
@@ -119,49 +124,34 @@ class StandardizeAddress::Verify
     address_hash.max_by { |key, value| key.length }
   end
 
-  def formatted_address
-    {
-      firm_name: address.css("FirmName").text,
-      address_1: address.css("Address1").text,
-      address_2: address.css("Address2").text,
-      city: address.css("City").text,
-      state: address.css("State").text,
-      urbanization: address.css("Urbanization").text,
-      zip_5: address.css("Zip5").text,
-      zip_4: address.css("Zip4").text,
-      return_text: address.css("ReturnText").text,
-      description: describe_error(address.css("Number").text)
-    }.delete_if { |key, value| value.empty? || value.nil? }
-  end
-
   def display
     parsed_address(formatted_address)
   end
 
-  def save(customer)
-    customer_address = formatted_address
+  def save(addressee)
+    addressee_address = formatted_address
 
-    customer_address.delete_if do |key, value|
+    addressee_address.delete_if do |key, value|
       value.empty? || value.nil? || key == :return_text || key == :description
     end
 
-    if customer_exists?(customer)
-      customer_address.each do |key, value|
-        self.class.all[customer_index(customer)][key] = value
+    if addressee_exists?(addressee)
+      addressee_address.each do |key, value|
+        self.class.all[addressee_index(addressee)][key] = value
       end
     else
-      customer_address[:customer] = customer
-      self.class.all << customer_address
+      addressee_address[:addressee] = addressee
+      self.class.all << addressee_address
     end
   end
 
-  def customer_exists?(customer)
-    self.class.all.any? { |addresses| addresses[:customer] == customer }
+  def addressee_exists?(addressee)
+    self.class.all.any? { |addresses| addresses[:addressee] == addressee }
   end
 
-  def customer_index(customer)
-    if customer_exists?(customer)
-      self.class.all.index { |addresses| addresses[:customer] == customer }
+  def addressee_index(addressee)
+    if addressee_exists?(addressee)
+      self.class.all.index { |addresses| addresses[:addressee] == addressee }
     end
   end
 
@@ -173,13 +163,11 @@ class StandardizeAddress::Verify
 
   def list_view_format(address_hash)
     [
-      address_hash[:customer],
-      address_hash[:firm_name],
+      address_hash[:addressee],
       address_hash[:address_1],
       address_hash[:address_2],
       address_hash[:city],
       address_hash[:state],
-      address_hash[:urbanization],
       "#{address_hash[:zip_5]}-#{address_hash[:zip_4]}"
     ].compact.reject(&:empty?).join(", ")
   end
