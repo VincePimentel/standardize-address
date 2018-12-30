@@ -26,7 +26,15 @@ class StandardizeAddress::CLI
 
   def menu
     @current_menu = "menu"
-    menu_options = ["VERIFY", "V", "LIST", "L", "EXIT", "T1", "T2"]
+    menu_options = %w[
+      VERIFY
+      V
+      LIST
+      L
+      EXIT
+      T1
+      T2
+    ]
     user_option = "!"
     until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION MENU")
@@ -35,7 +43,7 @@ class StandardizeAddress::CLI
       puts "    verify: Standardize an address."
       puts "    list  : Displays a list of previously standardized addresses."
       #puts "    track    : Track package status."
-      #puts "    packages : Displays all previous package tracks."
+      #puts "    packages : Displays all previously tracked packages."
       puts "    exit  : Terminates the program."
       spacer
       user_option = gets.strip.upcase
@@ -172,22 +180,22 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      @addressee = ""
-      until !@addressee.empty?
+      @name = ""
+      until !@name.empty?
         puts "Please enter a name to save this address under:"
         spacer
         #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
-        @addressee = gets.strip.upcase
+        @name = gets.strip.upcase
       end
       spacer
 
-      name_address = address_hash
-      name_address["Name".to_sym] = @addressee
+      name_address = {:"Name" => @name}.merge(address_hash)
+      #To place :"Name" in front of the hash
 
       address = StandardizeAddress::Address.new(name_address)
 
       #ASK TO OVERWRITE IF IT EXISTS
-      puts "    Address saved under: #{@addressee}"
+      puts "    Address saved under: #{@name}"
       spacer
       countdown_to_menu
     when "N"
@@ -201,7 +209,7 @@ class StandardizeAddress::CLI
 
   def address_hash
     {
-      #"Name": @addressee,
+      #"Name": @name,
       "Apt/Suite": @address.address_1,
       "Street": @address.address_2,
       "City": @address.city,
@@ -214,7 +222,6 @@ class StandardizeAddress::CLI
 
   def standardized_address
     address_hash.each do |key, value|
-
       spacing = " " * (longest_key(address_hash).first.length - key.length)
 
       if key == "Apt/Suite"
@@ -239,7 +246,7 @@ class StandardizeAddress::CLI
       countdown_to_menu
       menu
     else
-      @address.list_view
+      StandardizeAddress::Address.list_view
       spacer
 
       menu_options = (1..StandardizeAddress::Address.all.size).to_a.map(&:to_s)
@@ -255,16 +262,16 @@ class StandardizeAddress::CLI
       case user_option
       when "BACK" then back
       when "EXIT" then exit
-      else detail(option)
+      else detail(user_option)
       end
     end
   end
 
-  def detail(option)
+  def detail(user_option)
     @current_menu = "detail"
     banner("STANDARDIZED ADDRESS")
 
-    @address.detailed_view(option)
+    StandardizeAddress::Address.detailed_view(user_option)
     spacer
 
     menu_options = ["BACK", "", "MENU", "EXIT"]
@@ -317,7 +324,7 @@ class StandardizeAddress::CLI
   end
 
   def countdown_to_menu
-    i = 3
+    i = 1
     until i == 0
       puts "Returning to main menu in #{i}."
       sleep 1

@@ -11,7 +11,7 @@ class StandardizeAddress::Scraper
       xml: "&XML=",
       request: "AddressValidateRequest",
       user: "USERID='#{username}'"
-      #username found in standardized_address.rb
+      #username found in lib/standardized_address.rb
     }
   end
 
@@ -64,5 +64,4 @@ class StandardizeAddress::Scraper
   def any_error?
     !self.number.empty?
   end
-
 end
