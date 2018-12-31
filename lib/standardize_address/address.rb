@@ -35,13 +35,12 @@ class StandardizeAddress::Address
 
   def self.list_view
     self.all.each_with_index do |address, index|
-      puts "#{index + 1}) #{self.list_view_format(address)}"
+      puts "#{index + 1}) ".light_white + "#{self.list_view_format(address)}".green
     end
   end
 
   def self.list_view_format(address_hash)
-    address = address_hash.reject{ |key, value|
-      key == :"Note" || key == :"ZIP Code" || key == :"ZIP + 4"}.map{ |key, value| "#{value}" }.join(", ")
+    address = address_hash.reject{ |key, value| value.empty? || value.nil? || key == :"Note" || key == :"ZIP Code" || key == :"ZIP + 4"}.map{ |key, value| "#{value}" }.join(", ")
 
     "#{address}, #{address_hash[:"ZIP Code"]}-#{address_hash[:"ZIP + 4"]}"
   end

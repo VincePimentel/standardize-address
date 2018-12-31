@@ -60,7 +60,6 @@ class StandardizeAddress::CLI
       spacer
       user_option = gets.strip.upcase
     end
-    spacer
 
     case user_option
     when "VERIFY", "V" then verify
@@ -79,9 +78,9 @@ class StandardizeAddress::CLI
   def verify
     @current_menu = "verify"
     banner("ADDRESS STANDARDIZATION")
-    puts "Corrects errors in street addresses including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4."
+    puts "Corrects errors in street addresses including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4.".green
     spacer
-    puts "To begin, please fill out the following:"
+    puts "To begin, please fill out the following:".green
     spacer
 
     address_2 = ""
@@ -110,7 +109,7 @@ class StandardizeAddress::CLI
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      puts "Is this correct? (y/n)".light_white
+      puts "Is this correct? (".light_white + "y/n".red + ")".light_white
       spacer
       puts "    Apt/Suite: " + "#{address_1}".green
       puts "    Address  : " + "#{address_2}".green
@@ -144,8 +143,7 @@ class StandardizeAddress::CLI
         banner("ADDRESS STANDARDIZATION")
         puts error_message
         spacer
-        puts "Do you want to try again? (y/n)".light_white
-        spacer
+        puts "Do you want to try again? (".light_white + "y/n".red + ")".light_white
         user_option = gets.strip.upcase
       end
       spacer
@@ -182,8 +180,7 @@ class StandardizeAddress::CLI
       banner("STANDARDIZED ADDRESS")
       display_address
       spacer
-      puts "Do you want to save this address? (y/n)".light_white
-      spacer
+      puts "Do you want to save this address? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
     end
     spacer
@@ -193,7 +190,6 @@ class StandardizeAddress::CLI
       @name = ""
       until !@name.empty?
         puts "Please enter a name to save this address under:".light_white
-        spacer
         #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
         @name = gets.strip.upcase
       end
@@ -240,9 +236,9 @@ class StandardizeAddress::CLI
       spacing = " " * (longest_key(address_hash).first.length - key.length)
 
       if key == "Apt/Suite"
-        puts "    #{key}: #{value.green}"
+        puts "    #{key}: #{value.green}" if !value.nil?
       else
-        puts "    #{key}#{spacing}: #{value.green}"
+        puts "    #{key}#{spacing}: #{value.green}" if !value.nil?
       end
     end
   end
@@ -269,7 +265,6 @@ class StandardizeAddress::CLI
       user_option = "!"
       until valid_option?(user_option, menu_options)
         puts "Enter number to view detailed information:".light_white
-        spacer
         user_option = gets.strip.upcase
       end
       spacer
@@ -292,8 +287,7 @@ class StandardizeAddress::CLI
     menu_options = ["BACK", "", "MENU", "EXIT"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      puts "Where do you want to go? (back/menu/exit)".light_white
-      spacer
+      puts "Where do you want to go? (".light_white + "back/menu/exit".red + ")".light_white
       user_option = gets.strip.upcase
     end
 
@@ -322,9 +316,9 @@ class StandardizeAddress::CLI
     menu_options = ["Y", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      puts "You will lose all addresses saved during this session!".colorize(:red)
-      puts "Are you sure you want to exit? (y/n)".light_white
       spacer
+      puts "You will lose all addresses saved during this session!".colorize(:red)
+      puts "Are you sure you want to exit? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
     end
     spacer
