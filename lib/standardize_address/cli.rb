@@ -10,28 +10,17 @@ class StandardizeAddress::CLI
   def validate_username
     if username.empty?
       spacer
-      puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb."
+      puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb.".red
       spacer
       puts "    To request a username, please visit:"
-      puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm"
+      puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm".yellow
       spacer
     elsif !username.empty? && !@address.valid?
       spacer
-      puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb."
+      puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb.".red
       spacer
     else
       menu
-      #test_menu
-    end
-  end
-
-  def test_menu
-    str = "Hello World!"
-    arr = ["Hello", "World!"]
-    colors = ["black", "light_black", "red", "light_red", "green", "light_green", "yellow", "light_yellow", "blue", "light_blue", "magenta", "light_magenta", "cyan", "light_cyan", "white", "light_white", "default"]
-
-    colors.each do |color|
-      puts "#{str}".send(color)
     end
   end
 
@@ -43,10 +32,12 @@ class StandardizeAddress::CLI
       LIST
       L
       EXIT
+      E
       T1
       T2
       T3
     ]
+    menu_options << ""
     user_option = "!"
     until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION MENU")
@@ -56,17 +47,17 @@ class StandardizeAddress::CLI
       command("list  : Displays a list of previously standardized addresses.")
       #puts "    track    : Track package status."
       #puts "    packages : Displays all previously tracked packages."
-      command("exit  : Terminates the program.")
+      command("exit  : Ends the program.")
       spacer
       user_option = gets.strip.upcase
     end
 
     case user_option
-    when "VERIFY", "V" then verify
+    when "VERIFY", "V", "" then verify
     when "LIST", "L" then list
     #when "TRACK" then track
     #when "PACKAGES" then packages
-    when "EXIT" then exit
+    when "EXIT", "E" then exit
 
     #TEST CASES
     when "T1" then test_1
@@ -111,11 +102,11 @@ class StandardizeAddress::CLI
     until valid_option?(user_option, menu_options)
       puts "Is this correct? (".light_white + "y/n".red + ")".light_white
       spacer
-      puts "    Apt/Suite: " + "#{address_1}".green
-      puts "    Address  : " + "#{address_2}".green
-      puts "    City     : " + "#{city}".green
-      puts "    State    : " + "#{state}".green
-      puts "    ZIP Code : " + "#{zip_5}".green
+      puts "    Apt/Suite: #{address_1.green}"
+      puts "    Address  : #{address_2.green}"
+      puts "    City     : #{city.green}"
+      puts "    State    : #{state.green}"
+      puts "    ZIP Code : #{zip_5.green}"
       spacer
       user_option = gets.strip.upcase
     end
@@ -158,19 +149,18 @@ class StandardizeAddress::CLI
   end
 
   def error_message
-    message_1 = "    Error: ".red + "The"
-    message_2 = "that you have entered was not found."
+    message = ["Error:", "The", "that you have entered was not found."]
 
     case @address.number
     when "-2147219401"
-      "#{message_1}" + " Street Address ".light_white + "#{message_2}"
+      issue = "Street Address"
     when "-2147219400"
-      "#{message_1}" + " City ".light_white + "#{message_2}"
+      issue = "City"
     when "-2147219402"
-      "#{message_1}" + " State ".light_white + "#{message_2}"
-    else
-      "No errors found."
+      issue = "State"
     end
+
+    "    #{message[0].red} #{message[1].green} #{issue.yellow} #{message[2].green}"
   end
 
   def save_address?
@@ -222,7 +212,7 @@ class StandardizeAddress::CLI
       "ZIP Code": @address.zip_5,
       "ZIP + 4": @address.zip_4,
       "Note": @address.return_text.split(": ")[1]
-    }#.delete_if { |key, value| value.empty? || value.nil? || key.empty? || key.nil? }
+    }
   end
 
   def display_address(index = 0)
@@ -232,13 +222,15 @@ class StandardizeAddress::CLI
       address = address_hash
     end
 
-    address.each do |key, value|
+    new_address = address.reject{ |key, value| value.to_s.empty? }
+
+    new_address.each do |key, value|
       spacing = " " * (longest_key(address_hash).first.length - key.length)
 
       if key == "Apt/Suite"
-        puts "    #{key}: #{value.green}" if !value.nil?
+        puts "    #{key}: #{value.green}"
       else
-        puts "    #{key}#{spacing}: #{value.green}" if !value.nil?
+        puts "    #{key}#{spacing}: #{value.green}"
       end
     end
   end
@@ -252,25 +244,27 @@ class StandardizeAddress::CLI
     banner("STANDARDIZED ADDRESSES")
 
     if StandardizeAddress::Address.all.empty?
-      puts "    No addresses currently saved."
+      puts "    No addresses currently saved.".red
       spacer
       countdown_to_menu
       menu
     else
-      StandardizeAddress::Address.list_view
+      StandardizeAddress::Address.view_list
       spacer
 
-      menu_options = (1..StandardizeAddress::Address.all.size).to_a.map(&:to_s)
-      menu_options.push("BACK", "EXIT")
+      total = StandardizeAddress::Address.all.size
+
+      menu_options = (1..total).to_a.map(&:to_s)
+      menu_options.push("BACK", "", "EXIT")
       user_option = "!"
       until valid_option?(user_option, menu_options)
-        puts "Enter number to view detailed information:".light_white
+        puts "Which address would you like to view more about? (".light_white + "[total: #{total}]/back/exit".red + ")".light_white
         user_option = gets.strip.upcase
       end
       spacer
 
       case user_option
-      when "BACK" then back
+      when "BACK", "" then back
       when "EXIT" then exit
       else detail(user_option.to_i)
       end
@@ -284,7 +278,7 @@ class StandardizeAddress::CLI
     display_address(index)
     spacer
 
-    menu_options = ["BACK", "", "MENU", "EXIT"]
+    menu_options = ["BACK", "B", "", "MENU", "M", "EXIT"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
       puts "Where do you want to go? (".light_white + "back/menu/exit".red + ")".light_white
@@ -292,8 +286,8 @@ class StandardizeAddress::CLI
     end
 
     case user_option
-    when "BACK", "" then list
-    when "MENU" then menu
+    when "BACK", "B", "" then list
+    when "MENU", "M" then menu
     when "EXIT" then exit
     end
   end
@@ -318,6 +312,7 @@ class StandardizeAddress::CLI
     until valid_option?(user_option, menu_options)
       spacer
       puts "You will lose all addresses saved during this session!".colorize(:red)
+      spacer
       puts "Are you sure you want to exit? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
     end
@@ -325,7 +320,7 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y"
-      puts "Goodbye! Have a nice day!"
+      puts "Goodbye! Have a nice day!".light_white
       spacer
     when "N"
       menu
@@ -338,6 +333,8 @@ class StandardizeAddress::CLI
       puts "Returning to main menu in " + "#{i}".green
       sleep 1
       i -= 1
+      print "\e[A\e[2K"
+      #Moves cursor one line up and clears
     end
   end
 
