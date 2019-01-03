@@ -7,20 +7,19 @@ class StandardizeAddress::CLI
     validate_username
   end
 
-  def init_test
-    @request_1 = StandardizeAddress::Address.new
-    @request_2 = StandardizeAddress::Address.new
-    @response_1 = StandardizeAddress::Scraper.new(@request_1)
-    @response_2 = StandardizeAddress::Scraper.new(@request_2)
-    test_1
-    test_2
-    @request_1.save
-    @request_2.save
-  end
+  # def init_test
+  #   @request_1 = StandardizeAddress::Address.new
+  #   @request_2 = StandardizeAddress::Address.new
+  #   @response_1 = StandardizeAddress::Scraper.new(@request_1)
+  #   @response_2 = StandardizeAddress::Scraper.new(@request_2)
+  #   test_1
+  #   test_2
+  #   @request_1.save
+  #   @request_2.save
+  # end
 
   def validate_username
-    #request = StandardizeAddress::Address.new
-    response = StandardizeAddress::Scraper.new#(request)
+    @address = StandardizeAddress::Scraper.new
 
     binding.pry
 
@@ -31,7 +30,7 @@ class StandardizeAddress::CLI
       puts "    To request a username, please visit:"
       puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm".yellow
       spacer
-    elsif !username.empty? && !request.valid?
+    elsif !username.empty? && !@address.valid?
       spacer
       puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb.".red
       spacer

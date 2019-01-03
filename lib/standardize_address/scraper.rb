@@ -3,8 +3,8 @@ class StandardizeAddress::Scraper
 
   attr_reader :address
 
-  def initialize(address = nil)
-    @address = address
+  def initialize(address_hash = {})
+    @address = address_hash
   end
 
   def signature
@@ -22,12 +22,12 @@ class StandardizeAddress::Scraper
   def xml_tags
     [
       "<Address ID='0'>",
-      "<Address1>#{address.address_1}</Address1>",
-      "<Address2>#{address.address_2}</Address2>",
-      "<City>#{address.city}</City>",
-      "<State>#{address.state}</State>",
-      "<Zip5>#{address.zip_5}</Zip5>",
-      "<Zip4>#{address.zip_4}</Zip4>",
+      "<Address1>#{@address[:address_1]}</Address1>",
+      "<Address2>#{@address[:address_2]}</Address2>",
+      "<City>#{@address[:city]}</City>",
+      "<State>#{@address[:state]}</State>",
+      "<Zip5>#{@address[:zip_5]}</Zip5>",
+      "<Zip4>#{@address[:zip_4]}</Zip4>",
       "</Address>"
     ]
   end
@@ -48,7 +48,15 @@ class StandardizeAddress::Scraper
     Nokogiri::XML(open(xml_request))
   end
 
-  def address
+  def valid?
+    !xml_response.css("Number").text.include?("80040B1A")
+  end
+
+  def any_error?
+    !xml_response.css("Number").text.empty?
+  end
+
+  def address_hash
     xml = xml_response
     {
       address_1: xml.css("Address1").text,
@@ -64,13 +72,5 @@ class StandardizeAddress::Scraper
 
   def create_new_address
     StandardizeAddress::Address.new(address_hash)
-  end
-
-  def valid?
-    !address[:number].include?("80040B1A")
-  end
-
-  def any_error?
-    !address[:number].empty?
   end
 end
