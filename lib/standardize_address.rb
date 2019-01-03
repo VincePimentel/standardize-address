@@ -6,52 +6,32 @@ require "pry"
 module StandardizeAddress
   module Username
     def username
-      #INSERT YOUR USPS WEB TOOLS API USERNAME BETWEEN ""
+      #INSERT YOUR USERNAME BETWEEN " " BELOW
       "253VINCE6398"
-      #253VINCE6398
+      #INSERT YOUR USERNAME BETWEEN " " ABOVE
     end
   end
 
   module Tests
     def test_1
-      #Inputs an address that does not return an error
-      #@request.address[:name] = "John Doe"
-      @request.address[:address_1] = ""
-      @request.address[:address_2] = "1600 pennsylvania"
-      @request.address[:city] = "washington"
-      @request.address[:state] = "dc"
-      @request.address[:zip_5] = "20500"
-      @request.address[:zip_4] = "0003"
+      @request.address_1 = ""
+      @request.address_2 = "1600 pennsylvania"
+      @request.city = "washington"
+      @request.state = "dc"
+      @request.zip_5 = "20500"
       error_check
-      #@request_1
     end
 
     def test_2
-      #Inputs an address that does not return an error
-      @request_2.name = "Jane Doe"
-      @request_2.address_1 = ""
-      @request_2.address_2 = "400 Broad St"
-      @request_2.city = "Seattle"
-      @request_2.state = "WA"
-      @request_2.zip_5 = "98109"
-      @request_2.zip_4 =  "4607"
-      #error_check
-      @request_2
+      @request.address_1 = ""
+      @request.address_2 = "400 Broad St"
+      @request.city = "Seattle"
+      @request.state = "WA"
+      @request.zip_5 = "98109"
+      error_check
     end
 
-    def test_2
-      #Inputs an address that does not return an error
-      @request_2.address_1 = ""
-      @request_2.address_2 = "400 Broad St"
-      @request_2.city = "Seattle"
-      @request_2.state = "WA"
-      @request_2.zip_5 = "98109"
-      #error_check
-      @request_2
-    end
-
-    def test_4
-      #Inputs an address that returns an error
+    def test_3
       @request.address_1 = ""
       @request.address_2 = "1600 penns"
       @request.city = "wash"

@@ -14,17 +14,14 @@ class StandardizeAddress::Address
     @@all
   end
 
-  #Returns true/false depending on whether self.name exists or not in @@all
   def name_exists?
     self.class.all.any?{ |address| address.name == self.name }
   end
 
-  #Returns index of self.name saved in @@all
   def index
     self.class.all.index{ |address| address.name == self.name }
   end
 
-  #Overwrite existing or push instance in @@all
   def save
     if name_exists?
       self.class.all[index] = self
@@ -33,14 +30,12 @@ class StandardizeAddress::Address
     end
   end
 
-  #Displays all saved addresses in list view
   def self.view_list
     self.all.each_with_index do |address, index|
       puts "#{index + 1}) ".light_white + "#{self.list_format(address)}".green
     end
   end
 
-  #Formats the given address to be displayed as a string
   def self.list_format(address)
     [
       address.name,
@@ -51,18 +46,4 @@ class StandardizeAddress::Address
       "#{address.zip_5}-#{address.zip_4}"
     ].compact.reject(&:empty?).join(", ")
   end
-
-  # def self.format_address(index)
-  #   address = self.all[index]
-  #   {
-  #     "Name": address.name,
-  #     "Apt/Suite": address.address_1,
-  #     "Street": address.address_2,
-  #     "City": address.city,
-  #     "State": address.state,
-  #     "ZIP Code": address.zip_5,
-  #     "ZIP + 4": address.zip_4,
-  #     "Note": address.text
-  #   }.reject{ |key, value| value.to_s.empty? }
-  # end
 end

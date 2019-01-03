@@ -1,11 +1,7 @@
 class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
-  def initialize
-    validate_username
-  end
-
-  def validate_username
+  def start
     if username.empty?
       spacer
       puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb.".red
@@ -121,6 +117,7 @@ class StandardizeAddress::CLI
     end
   end
 
+  #If an error is found: exit, retry or save address
   def error_check
     proceed = @request.error_code.include?("80040B1A") ? false : true
 
@@ -134,8 +131,8 @@ class StandardizeAddress::CLI
           spacer
           puts "Do you want to try again? (".light_white + "y/n".red + ")".light_white
           user_option = gets.strip.upcase
+          spacer
         end
-        spacer
 
         case user_option
         when "Y", "" then verify
@@ -147,11 +144,12 @@ class StandardizeAddress::CLI
       end
     else
       spacer
-      puts "    Username is incorrect or does not exist. Please double check your username inside '/lib/standardize_address.rb' and try again." .red
+      puts "    Username is incorrect or does not exist. Please double check your username inside '/lib/standardize_address.rb' and try again.".red
       spacer
     end
   end
 
+  #Returns an error message
   def error_message
     message = ["Error:", "The", "that you have entered was not found."]
 
@@ -168,7 +166,6 @@ class StandardizeAddress::CLI
   end
 
   def save_address?
-    @current_menu = "save address"
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
@@ -177,18 +174,17 @@ class StandardizeAddress::CLI
       spacer
       puts "Do you want to save this address? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
+      spacer
     end
-    spacer
 
     case user_option
     when "Y", ""
       name = ""
       until !name.empty?
         puts "Please enter a name to save this address under:".light_white
-        #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
         name = gets.strip.upcase
+        spacer
       end
-      spacer
 
       @address.name = name
       @address.save
@@ -205,6 +201,7 @@ class StandardizeAddress::CLI
     menu
   end
 
+  #If an index was not passed, format current Address instance else address in given index
   def format_address(index)
     case index
     when -1
@@ -253,30 +250,30 @@ class StandardizeAddress::CLI
       countdown_to_menu
       menu
     else
+      total = StandardizeAddress::Address.all.size
+
       StandardizeAddress::Address.view_list
       spacer
-
-      total = StandardizeAddress::Address.all.size
 
       menu_options = (1..total).to_a.map(&:to_s)
       menu_options.push("BACK", "", "EXIT")
       user_option = "!"
       until valid_option?(user_option, menu_options)
-        puts "Which address would you like to view more about? (".light_white + "[total: #{total}]/back/exit".red + ")".light_white
+        puts "Which address would you like to expand? (".light_white + "[total: #{total}]/back/exit".red + ")".light_white
         user_option = gets.strip.upcase
+        spacer
       end
-      spacer
 
       case user_option
       when "BACK", "" then back
       when "EXIT" then exit
-      else detail(user_option.to_i)
+      else detailed_view(user_option.to_i)
       end
     end
   end
 
-  def detail(index)
-    @current_menu = "detail"
+  def detailed_view(index)
+    @current_menu = "detailed_view"
     banner("STANDARDIZED ADDRESS")
 
     display_address(index)
@@ -298,16 +295,14 @@ class StandardizeAddress::CLI
 
   def back
     case @current_menu
-    when "verify","list"
-      menu
-    when "detail"
-      list
+    when "verify","list" then menu
+    when "detailed_view" then list
     end
   end
 
+  #Returns true/false depending on the values returned by intersecting the user input and menu options. If true, user input is valid else false.
   def valid_option?(user_option, menu_options)
     !([user_option] & menu_options).empty?
-    #Returns true/false depending on the values returned by intersecting the user input and menu option. If true, user input is valid else false.
   end
 
   def exit
@@ -319,8 +314,8 @@ class StandardizeAddress::CLI
       spacer
       puts "Are you sure you want to exit? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
+      spacer
     end
-    spacer
 
     case user_option
     when "Y"
@@ -338,7 +333,7 @@ class StandardizeAddress::CLI
       sleep 1
       i -= 1
       print "\e[A\e[2K"
-      #Moves cursor one line up and clears
+      #Moves cursor one line up and clears it
     end
   end
 

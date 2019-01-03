@@ -2,4 +2,4 @@
 
 require_relative "../lib/standardize_address"
 
-StandardizeAddress::CLI.new
+StandardizeAddress::CLI.new.start
