@@ -142,7 +142,6 @@ class StandardizeAddress::CLI
       when "N" then menu
       end
     else
-      binding.pry
       @request.update_address
       save_address?
     end
@@ -164,6 +163,7 @@ class StandardizeAddress::CLI
   end
 
   def save_address?
+    @current_menu = "save address"
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
@@ -185,12 +185,7 @@ class StandardizeAddress::CLI
       end
       spacer
 
-      @request.update
-
-      address_hash = {name: name}.merge(@request.address)
-      #Places :"Name" in front of the hash
-
-      @address = StandardizeAddress::Address.new(address_hash)
+      @address.name = name
       @address.save
 
       puts "    Address saved under: #{name.green}"
@@ -205,12 +200,28 @@ class StandardizeAddress::CLI
     menu
   end
 
-  def display_address(index = 0)
-    if @current_menu == "detail"
-      address = StandardizeAddress::Address.format_address(index - 1)
+  def format_address(index)
+    case index
+    when 0
+      address = @request.address
     else
-      address = @request.format_response
+      address = StandardizeAddress::Address.all(index - 1)
     end
+
+    {
+      "Name": address.name,
+      "Apt/Suite": address.address_1,
+      "Street": address.address_2,
+      "City": address.city,
+      "State": address.state,
+      "ZIP Code": address.zip_5,
+      "ZIP + 4": address.zip_4,
+      "Note": address.text
+    }.reject{ |key, value| value.to_s.empty? }
+  end
+
+  def display_address(index = 0)
+    address = format_address(index)
 
     address.each do |key, value|
       spacing = " " * (longest_key_length(address) - key.length)

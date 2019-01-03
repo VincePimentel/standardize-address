@@ -1,6 +1,6 @@
 class StandardizeAddress::Address
 
-  attr_accessor :name, :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
+  attr_accessor :name, :address_1, :address_2, :city, :state, :zip_5, :zip_4, :text, :number
 
   @@all = Array.new
 
@@ -52,17 +52,17 @@ class StandardizeAddress::Address
     ].compact.reject(&:empty?).join(", ")
   end
 
-  def self.format_address(index)
-    address = self.all[index]
-    {
-      "Name": address.name,
-      "Apt/Suite": address.address_1,
-      "Street": address.address_2,
-      "City": address.city,
-      "State": address.state,
-      "ZIP Code": address.zip_5,
-      "ZIP + 4": address.zip_4,
-      "Note": address.return_text.split(": ")[1]
-    }.reject{ |key, value| value.to_s.empty? }
-  end
+  # def self.format_address(index)
+  #   address = self.all[index]
+  #   {
+  #     "Name": address.name,
+  #     "Apt/Suite": address.address_1,
+  #     "Street": address.address_2,
+  #     "City": address.city,
+  #     "State": address.state,
+  #     "ZIP Code": address.zip_5,
+  #     "ZIP + 4": address.zip_4,
+  #     "Note": address.text
+  #   }.reject{ |key, value| value.to_s.empty? }
+  # end
 end

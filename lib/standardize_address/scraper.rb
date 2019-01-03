@@ -2,7 +2,7 @@ class StandardizeAddress::Scraper
   include StandardizeAddress::Username
 
   attr_accessor :address
-  # attr_reader :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
+  # attr_reader :address_1, :address_2, :city, :state, :zip_5, :zip_4, :text, :number
 
   def initialize(address)
     @address = address
@@ -69,20 +69,20 @@ class StandardizeAddress::Scraper
     address.state = xml.css("State").text
     address.zip_5 = xml.css("Zip5").text
     address.zip_4 = xml.css("Zip4").text
-    address.return_text = xml.css("ReturnText").text
+    address.text = xml.css("ReturnText").text.gsub(/.*: /, "")
     address.number = xml.css("Number").text
     address
   end
 
-  def format_address
-    {
-      "Apt/Suite": address.address_1,
-      "Street": address.address_2,
-      "City": address.city,
-      "State": address.state,
-      "ZIP Code": address.zip_5,
-      "ZIP + 4": address.zip_4,
-      "Note": address.return_text#.split(": ")[1]
-    }.reject{ |key, value| value.to_s.empty? }
-  end
+  # def format_address
+  #   {
+  #     "Apt/Suite": address.address_1,
+  #     "Street": address.address_2,
+  #     "City": address.city,
+  #     "State": address.state,
+  #     "ZIP Code": address.zip_5,
+  #     "ZIP + 4": address.zip_4,
+  #     "Note": address.text
+  #   }.reject{ |key, value| value.to_s.empty? }
+  # end
 end
