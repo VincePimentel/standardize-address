@@ -1,6 +1,6 @@
 # Standardize Address
 
-Address standardization is the process of formatting an address so that it matches the approved format of the national postal authority. The USPS determines the official format for addresses in the United States. This utility will take user input (incomplete address) and send a request to the USPS Web Tools server. The response will then be parsed and formatted that is readable to the user. The result is a standardized address.
+Address standardization is the process of formatting an address so that it matches the approved format of the national postal authority. The USPS determines the official format for addresses in the United States. This utility will take user input (incomplete address) and send a request to the USPS Web Tools server. The response will then be parsed and formatted that is readable to the user. The result is a standardized address that can be saved in memory for later viewing (no persistence as of yet).
 
 ## Installation
 
