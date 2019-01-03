@@ -1,13 +1,10 @@
 class StandardizeAddress::Scraper
   include StandardizeAddress::Username
 
-  # attr_accessor :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
-
   attr_reader :address
 
   def initialize(address = nil)
     @address = address
-    binding.pry
   end
 
   def signature
