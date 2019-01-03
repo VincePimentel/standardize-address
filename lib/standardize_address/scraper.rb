@@ -27,7 +27,7 @@ class StandardizeAddress::Scraper
       "<City>#{@address[:city]}</City>",
       "<State>#{@address[:state]}</State>",
       "<Zip5>#{@address[:zip_5]}</Zip5>",
-      "<Zip4></Zip4>",
+      "<Zip4>#{@address[:zip_4]}</Zip4>",
       "</Address>"
     ]
   end
@@ -60,6 +60,12 @@ class StandardizeAddress::Scraper
     xml_response.css("Number").text
   end
 
+  def update
+    hash_response.each do |key, value|
+      @address[key] = value
+    end
+  end
+
   def hash_response
     xml = xml_response
     {
@@ -74,7 +80,7 @@ class StandardizeAddress::Scraper
     }.reject{ |key, value| value.to_s.empty? }
   end
 
-  def formatted_response
+  def format_response
     hash = hash_response
     {
       "Apt/Suite": hash[:address_1],

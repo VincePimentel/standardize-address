@@ -157,6 +157,7 @@ class StandardizeAddress::CLI
       when "N" then menu
       end
     else
+      binding.pry
       save_address?
     end
   end
@@ -198,12 +199,14 @@ class StandardizeAddress::CLI
       end
       spacer
 
+      @request.update
+
       address_hash = {name: name}.merge(@request.address)
       #Places :"Name" in front of the hash
 
       @address = StandardizeAddress::Address.new(address_hash)
+      @address.save
 
-      #ASK TO OVERWRITE IF IT EXISTS
       puts "    Address saved under: #{name.green}"
       spacer
       countdown_to_menu
@@ -216,31 +219,15 @@ class StandardizeAddress::CLI
     menu
   end
 
-  # def format_address
-  #   {
-  #     "Apt/Suite": @request.address_1,
-  #     "Street": @request.address_2,
-  #     "City": @request.city,
-  #     "State": @request.state,
-  #     "ZIP Code": @request.zip_5,
-  #     "ZIP + 4": @request.zip_4,
-  #     "Note": @request.return_text.split(": ")[1]
-  #   }
-  # end
-
   def display_address(index = 0)
     if @current_menu == "detail"
-      address = StandardizeAddress::Address.all[index - 1]
+      address = StandardizeAddress::Address.format_address(index - 1)
     else
-      address = @request.hash_response
+      address = @request.format_response
     end
 
-    # new_address = address.reject{ |key, value| value.to_s.empty? }
-
-    binding.pry
-
     address.each do |key, value|
-      spacing = " " * (longest_key(@request.formatted_response).first.length - key.length)
+      spacing = " " * (longest_key_length(address) - key.length)
 
       if key == "Apt/Suite"
         puts "    #{key}: #{value.green}"
@@ -250,8 +237,8 @@ class StandardizeAddress::CLI
     end
   end
 
-  def longest_key(address_hash)
-    address_hash.max_by { |key, value| key.length }
+  def longest_key_length(address_hash)
+    address_hash.max_by { |key, value| key.length }.first.length
   end
 
   def list

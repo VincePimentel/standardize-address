@@ -43,11 +43,26 @@ class StandardizeAddress::Address
   #Formats the given address to be displayed as a string
   def self.list_format(address)
     [
+      address.name,
       address.address_1,
       address.address_2,
       address.city,
       address.state,
       "#{address.zip_5}-#{address.zip_4}"
     ].compact.reject(&:empty?).join(", ")
+  end
+
+  def self.format_address(index)
+    address = self.all[index]
+    {
+      "Name": address.name,
+      "Apt/Suite": address.address_1,
+      "Street": address.address_2,
+      "City": address.city,
+      "State": address.state,
+      "ZIP Code": address.zip_5,
+      "ZIP + 4": address.zip_4,
+      "Note": address.return_text.split(": ")[1]
+    }.reject{ |key, value| value.to_s.empty? }
   end
 end

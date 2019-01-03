@@ -15,15 +15,15 @@ module StandardizeAddress
   module Tests
     def test_1
       #Inputs an address that does not return an error
-      @request_1.name = "John Doe"
-      @request_1.address_1 = ""
-      @request_1.address_2 = "1600 pennsylvania"
-      @request_1.city = "washington"
-      @request_1.state = "dc"
-      @request_1.zip_5 = "20500"
-      @request_1.zip_4 = "0003"
-      #verify_error_check
-      @request_1
+      #@request.address[:name] = "John Doe"
+      @request.address[:address_1] = ""
+      @request.address[:address_2] = "1600 pennsylvania"
+      @request.address[:city] = "washington"
+      @request.address[:state] = "dc"
+      @request.address[:zip_5] = "20500"
+      @request.address[:zip_4] = "0003"
+      verify_error_check
+      #@request_1
     end
 
     def test_2
