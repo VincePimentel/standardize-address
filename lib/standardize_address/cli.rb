@@ -2,27 +2,12 @@ class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    # init_test
-    # @request.set_attributes
+    @address = StandardizeAddress::Address.new
+    @request = StandardizeAddress::Scraper.new(@address)
     validate_username
   end
 
-  # def init_test
-  #   @request_1 = StandardizeAddress::Address.new
-  #   @request_2 = StandardizeAddress::Address.new
-  #   @response_1 = StandardizeAddress::Scraper.new(@request_1)
-  #   @response_2 = StandardizeAddress::Scraper.new(@request_2)
-  #   test_1
-  #   test_2
-  #   @request_1.save
-  #   @request_2.save
-  # end
-
   def validate_username
-    @request = StandardizeAddress::Scraper.new
-
-    #binding.pry
-
     if username.empty?
       spacer
       puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb.".red
@@ -128,11 +113,11 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      @request.address[:address_1] = address_1
-      @request.address[:address_2] = address_2
-      @request.address[:city] = city
-      @request.address[:state] = state
-      @request.address[:zip_5] = zip_5
+      @address.address_1 = address_1
+      @address.address_2 = address_2
+      @address.city = city
+      @address.state = state
+      @address.zip_5 = zip_5
       verify_error_check
     when "N"
       verify
@@ -158,6 +143,7 @@ class StandardizeAddress::CLI
       end
     else
       binding.pry
+      @request.update_address
       save_address?
     end
   end

@@ -1,10 +1,11 @@
 class StandardizeAddress::Scraper
   include StandardizeAddress::Username
 
-  attr_reader :address
+  attr_accessor :address
+  # attr_reader :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
 
-  def initialize(address_hash = {})
-    @address = address_hash
+  def initialize(address)
+    @address = address
   end
 
   def signature
@@ -22,12 +23,12 @@ class StandardizeAddress::Scraper
   def xml_tags
     [
       "<Address ID='0'>",
-      "<Address1>#{@address[:address_1]}</Address1>",
-      "<Address2>#{@address[:address_2]}</Address2>",
-      "<City>#{@address[:city]}</City>",
-      "<State>#{@address[:state]}</State>",
-      "<Zip5>#{@address[:zip_5]}</Zip5>",
-      "<Zip4>#{@address[:zip_4]}</Zip4>",
+      "<Address1>#{address.address_1}</Address1>",
+      "<Address2>#{address.address_2}</Address2>",
+      "<City>#{address.city}</City>",
+      "<State>#{address.state}</State>",
+      "<Zip5>#{address.zip_5}</Zip5>",
+      "<Zip4>#{address.zip_4}</Zip4>",
       "</Address>"
     ]
   end
@@ -60,40 +61,28 @@ class StandardizeAddress::Scraper
     xml_response.css("Number").text
   end
 
-  def update
-    hash_response.each do |key, value|
-      @address[key] = value
-    end
-  end
-
-  def hash_response
+  def update_address
     xml = xml_response
-    {
-      address_1: xml.css("Address1").text,
-      address_2: xml.css("Address2").text,
-      city: xml.css("City").text,
-      state: xml.css("State").text,
-      zip_5: xml.css("Zip5").text,
-      zip_4: xml.css("Zip4").text,
-      return_text: xml.css("ReturnText").text,
-      number: xml.css("Number").text
-    }.reject{ |key, value| value.to_s.empty? }
+    address.address_1 = xml.css("Address1").text
+    address.address_2 = xml.css("Address2").text
+    address.city = xml.css("City").text
+    address.state = xml.css("State").text
+    address.zip_5 = xml.css("Zip5").text
+    address.zip_4 = xml.css("Zip4").text
+    address.return_text = xml.css("ReturnText").text
+    address.number = xml.css("Number").text
+    address
   end
 
-  def format_response
-    hash = hash_response
+  def format_address
     {
-      "Apt/Suite": hash[:address_1],
-      "Street": hash[:address_2],
-      "City": hash[:city],
-      "State": hash[:state],
-      "ZIP Code": hash[:zip_5],
-      "ZIP + 4": hash[:zip_4],
-      "Note": hash[:return_text].split(": ")[1]
+      "Apt/Suite": address.address_1,
+      "Street": address.address_2,
+      "City": address.city,
+      "State": address.state,
+      "ZIP Code": address.zip_5,
+      "ZIP + 4": address.zip_4,
+      "Note": address.return_text#.split(": ")[1]
     }.reject{ |key, value| value.to_s.empty? }
   end
-
-  # def create_new_address
-  #   StandardizeAddress::Address.new(address_hash)
-  # end
 end
