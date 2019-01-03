@@ -1,12 +1,16 @@
 class StandardizeAddress::Address
 
-  attr_reader :address
+  attr_accessor :name, :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
+  # attr_reader :address
 
   @@all = Array.new
 
-  def initialize(address_hash)
-    @address = address_hash
-    self.save
+  def initialize(address_hash = {})
+    address_hash.each do |key, value|
+      self.send("#{key}=", value)
+    end
+    # @address = address_hash
+    # self.save
   end
 
   def self.all
@@ -14,7 +18,7 @@ class StandardizeAddress::Address
   end
 
   def name_exists?
-    self.class.all.any?{ |address| address[:"Name"] == self.address[:"Name"] }
+    self.class.all.any?{ |address| address.name == self.name }
   end
 
   def name_index

@@ -2,9 +2,10 @@ class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    @address = StandardizeAddress::Scraper.new
-    @address.set_attributes
-    validate_username
+    @request = StandardizeAddress::Address.new
+    @response = StandardizeAddress::Scraper.new(@request)
+    # @address.set_attributes
+    # validate_username
   end
 
   def validate_username

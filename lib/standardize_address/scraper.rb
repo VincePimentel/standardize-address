@@ -1,7 +1,14 @@
 class StandardizeAddress::Scraper
   include StandardizeAddress::Username
 
-  attr_accessor :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
+  # attr_accessor :address_1, :address_2, :city, :state, :zip_5, :zip_4, :return_text, :number
+
+  attr_reader :address
+
+  def initialize(address = nil)
+    @address = address
+    binding.pry
+  end
 
   def signature
     {
@@ -18,12 +25,12 @@ class StandardizeAddress::Scraper
   def xml_tags
     [
       "<Address ID='0'>",
-      "<Address1>#{self.address_1}</Address1>",
-      "<Address2>#{self.address_2}</Address2>",
-      "<City>#{self.city}</City>",
-      "<State>#{self.state}</State>",
-      "<Zip5>#{self.zip_5}</Zip5>",
-      "<Zip4>#{self.zip_4}</Zip4>",
+      "<Address1>#{address.address_1}</Address1>",
+      "<Address2>#{address.address_2}</Address2>",
+      "<City>#{address.city}</City>",
+      "<State>#{address.state}</State>",
+      "<Zip5>#{address.zip_5}</Zip5>",
+      "<Zip4>#{address.zip_4}</Zip4>",
       "</Address>"
     ]
   end
@@ -46,22 +53,22 @@ class StandardizeAddress::Scraper
 
   def set_attributes
     xml = xml_response
-    self.address_1 = xml.css("Address1").text
-    self.address_2 = xml.css("Address2").text
-    self.city = xml.css("City").text
-    self.state = xml.css("State").text
-    self.zip_5 = xml.css("Zip5").text
-    self.zip_4 = xml.css("Zip4").text
-    self.return_text = xml.css("ReturnText").text
-    self.number = xml.css("Number").text
-    self
+    address.address_1 = xml.css("Address1").text
+    address.address_2 = xml.css("Address2").text
+    address.city = xml.css("City").text
+    address.state = xml.css("State").text
+    address.zip_5 = xml.css("Zip5").text
+    address.zip_4 = xml.css("Zip4").text
+    address.return_text = xml.css("ReturnText").text
+    address.number = xml.css("Number").text
+    address
   end
 
   def valid?
-    !self.number.include?("80040B1A")
+    !address.number.include?("80040B1A")
   end
 
   def any_error?
-    !self.number.empty?
+    !address.number.empty?
   end
 end
