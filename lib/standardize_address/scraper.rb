@@ -48,24 +48,29 @@ class StandardizeAddress::Scraper
     Nokogiri::XML(open(xml_request))
   end
 
-  def set_attributes
+  def address
     xml = xml_response
-    address.address_1 = xml.css("Address1").text
-    address.address_2 = xml.css("Address2").text
-    address.city = xml.css("City").text
-    address.state = xml.css("State").text
-    address.zip_5 = xml.css("Zip5").text
-    address.zip_4 = xml.css("Zip4").text
-    address.return_text = xml.css("ReturnText").text
-    address.number = xml.css("Number").text
-    address
+    {
+      address_1: xml.css("Address1").text,
+      address_2: xml.css("Address2").text,
+      city: xml.css("City").text,
+      state: xml.css("State").text,
+      zip_5: xml.css("Zip5").text,
+      zip_4: xml.css("Zip4").text,
+      return_text: xml.css("ReturnText").text,
+      number: xml.css("Number").text
+    }
+  end
+
+  def create_new_address
+    StandardizeAddress::Address.new(address_hash)
   end
 
   def valid?
-    !address.number.include?("80040B1A")
+    !address[:number].include?("80040B1A")
   end
 
   def any_error?
-    !address.number.empty?
+    !address[:number].empty?
   end
 end

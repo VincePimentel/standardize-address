@@ -4,7 +4,7 @@ class StandardizeAddress::Address
 
   @@all = Array.new
 
-  def initialize(address = {})
+  def initialize(address_hash = {})
     address.each do |key, value|
       self.send("#{key}=", value)
     end
