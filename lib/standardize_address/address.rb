@@ -14,31 +14,22 @@ class StandardizeAddress::Address
     @@all
   end
 
-  #Returns true/false depending on whether name exists or not in @@all
+  #Returns true/false depending on whether self.name exists or not in @@all
   def name_exists?
     self.class.all.any?{ |address| address.name == self.name }
   end
 
-  #Returns index of name saved in @@all
+  #Returns index of self.name saved in @@all
   def index
     self.class.all.index{ |address| address.name == self.name }
   end
 
-  #Overwrite existing or add/push new instance in @@all
+  #Overwrite existing or push instance in @@all
   def save
     if name_exists?
       self.class.all[index] = self
     else
-      address = StandardizeAddress::Address.new
-      address.name = self.name
-      address.address_1 = self.address_1
-      address.address_2 = self.address_2
-      address.city = self.city
-      address.state = self.state
-      address.zip_5 = self.zip_5
-      address.zip_4 = self.zip_4
-      address.text = self.text
-      self.class.all << address
+      self.class.all << self
     end
   end
 

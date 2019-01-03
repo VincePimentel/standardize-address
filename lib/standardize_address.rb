@@ -22,7 +22,7 @@ module StandardizeAddress
       @request.address[:state] = "dc"
       @request.address[:zip_5] = "20500"
       @request.address[:zip_4] = "0003"
-      verify_error_check
+      error_check
       #@request_1
     end
 
@@ -35,7 +35,7 @@ module StandardizeAddress
       @request_2.state = "WA"
       @request_2.zip_5 = "98109"
       @request_2.zip_4 =  "4607"
-      #verify_error_check
+      #error_check
       @request_2
     end
 
@@ -46,7 +46,7 @@ module StandardizeAddress
       @request_2.city = "Seattle"
       @request_2.state = "WA"
       @request_2.zip_5 = "98109"
-      #verify_error_check
+      #error_check
       @request_2
     end
 
@@ -57,7 +57,7 @@ module StandardizeAddress
       @request.city = "wash"
       @request.state = "dc"
       @request.zip_5 = "20500"
-      verify_error_check
+      error_check
     end
   end
 end

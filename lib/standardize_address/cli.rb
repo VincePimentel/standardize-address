@@ -2,8 +2,6 @@ class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    @address = StandardizeAddress::Address.new
-    @request = StandardizeAddress::Scraper.new(@address)
     validate_username
   end
 
@@ -14,10 +12,6 @@ class StandardizeAddress::CLI
       spacer
       puts "    To request a username, please visit:"
       puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm".yellow
-      spacer
-    elsif !username.empty? && !@request.valid?
-      spacer
-      puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb.".red
       spacer
     else
       menu
@@ -85,65 +79,76 @@ class StandardizeAddress::CLI
     address_1 = gets.strip.upcase
     spacer
 
-    puts "Enter the City: ".light_white
+    puts "City: ".light_white
     city = gets.strip.upcase
     spacer
 
-    puts "Enter the State: ".light_white
+    puts "State: ".light_white
     state = gets.strip.upcase
     spacer
 
-    puts "Enter the ZIP code: ".light_white
+    puts "ZIP code (5 digits): ".light_white
     zip_5 = gets.strip.upcase
     spacer
 
     menu_options = ["Y", "", "N"]
     user_option = "!"
     until valid_option?(user_option, menu_options)
-      puts "Is this correct? (".light_white + "y/n".red + ")".light_white
-      spacer
+      banner("ADDRESS STANDARDIZATION")
       puts "    Apt/Suite: #{address_1.green}"
       puts "    Address  : #{address_2.green}"
       puts "    City     : #{city.green}"
       puts "    State    : #{state.green}"
       puts "    ZIP Code : #{zip_5.green}"
       spacer
+      puts "Is this correct? (".light_white + "y/n".red + ")".light_white
       user_option = gets.strip.upcase
+      spacer
     end
 
     case user_option
     when "Y", ""
+      @address = StandardizeAddress::Address.new
       @address.address_1 = address_1
       @address.address_2 = address_2
       @address.city = city
       @address.state = state
       @address.zip_5 = zip_5
-      verify_error_check
+      @request = StandardizeAddress::Scraper.new(@address)
+      error_check
     when "N"
       verify
     end
   end
 
-  def verify_error_check
-    if @request.any_error?
-      menu_options = ["Y", "", "N"]
-      user_option = "!"
-      until valid_option?(user_option, menu_options)
-        banner("ADDRESS STANDARDIZATION")
-        puts error_message
-        spacer
-        puts "Do you want to try again? (".light_white + "y/n".red + ")".light_white
-        user_option = gets.strip.upcase
-      end
-      spacer
+  def error_check
+    proceed = @request.error_code.include?("80040B1A") ? false : true
 
-      case user_option
-      when "Y", "" then verify
-      when "N" then menu
+    if proceed
+      if @request.any_error?
+        menu_options = ["Y", "", "N"]
+        user_option = "!"
+        until valid_option?(user_option, menu_options)
+          banner("ADDRESS STANDARDIZATION")
+          puts error_message
+          spacer
+          puts "Do you want to try again? (".light_white + "y/n".red + ")".light_white
+          user_option = gets.strip.upcase
+        end
+        spacer
+
+        case user_option
+        when "Y", "" then verify
+        when "N" then menu
+        end
+      else
+        @request.update_address
+        save_address?
       end
     else
-      @request.update_address
-      save_address?
+      spacer
+      puts "    Username is incorrect or does not exist. Please double check your username inside '/lib/standardize_address.rb' and try again." .red
+      spacer
     end
   end
 
