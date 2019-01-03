@@ -2,12 +2,27 @@ class StandardizeAddress::CLI
   include StandardizeAddress::Username, StandardizeAddress::Tests
 
   def initialize
-    @address = StandardizeAddress::Scraper.new
-    @address.set_attributes
+    # init_test
+    # @address.set_attributes
     validate_username
   end
 
+  # def init_test
+  #   @request_1 = StandardizeAddress::Address.new
+  #   @request_2 = StandardizeAddress::Address.new
+  #   @response_1 = StandardizeAddress::Scraper.new(@request_1)
+  #   @response_2 = StandardizeAddress::Scraper.new(@request_2)
+  #   test_1
+  #   test_2
+  #   @request_1.save
+  #   @request_2.save
+  # end
+
   def validate_username
+    @address = StandardizeAddress::Scraper.new
+
+    binding.pry
+
     if username.empty?
       spacer
       puts "    Please make sure that you have inserted your USPS Web Tools API username inside /lib/standardize_address.rb.".red
