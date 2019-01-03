@@ -202,10 +202,10 @@ class StandardizeAddress::CLI
 
   def format_address(index)
     case index
-    when 0
-      address = @request.address
+    when -1
+      address = @address
     else
-      address = StandardizeAddress::Address.all(index - 1)
+      address = StandardizeAddress::Address.all[index - 1]
     end
 
     {
@@ -220,7 +220,7 @@ class StandardizeAddress::CLI
     }.reject{ |key, value| value.to_s.empty? }
   end
 
-  def display_address(index = 0)
+  def display_address(index = -1)
     address = format_address(index)
 
     address.each do |key, value|

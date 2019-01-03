@@ -29,7 +29,16 @@ class StandardizeAddress::Address
     if name_exists?
       self.class.all[index] = self
     else
-      self.class.all << self
+      address = StandardizeAddress::Address.new
+      address.name = self.name
+      address.address_1 = self.address_1
+      address.address_2 = self.address_2
+      address.city = self.city
+      address.state = self.state
+      address.zip_5 = self.zip_5
+      address.zip_4 = self.zip_4
+      address.text = self.text
+      self.class.all << address
     end
   end
 
