@@ -3,7 +3,7 @@ class StandardizeAddress::CLI
 
   def initialize
     # init_test
-    # @address.set_attributes
+    # @request.set_attributes
     validate_username
   end
 
@@ -19,9 +19,9 @@ class StandardizeAddress::CLI
   # end
 
   def validate_username
-    @address = StandardizeAddress::Scraper.new
+    @request = StandardizeAddress::Scraper.new
 
-    binding.pry
+    #binding.pry
 
     if username.empty?
       spacer
@@ -30,7 +30,7 @@ class StandardizeAddress::CLI
       puts "    To request a username, please visit:"
       puts "    https://www.usps.com/business/web-tools-apis/web-tools-registration.htm".yellow
       spacer
-    elsif !username.empty? && !@address.valid?
+    elsif !username.empty? && !@request.valid?
       spacer
       puts "    Username is incorrect or does not exist. Please double check your username inside /lib/standardize_address.rb.".red
       spacer
@@ -128,11 +128,11 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      @address.address_1 = address_1
-      @address.address_2 = address_2
-      @address.city = city
-      @address.state = state
-      @address.zip_5 = zip_5
+      @request.address[:address_1] = address_1
+      @request.address[:address_2] = address_2
+      @request.address[:city] = city
+      @request.address[:state] = state
+      @request.address[:zip_5] = zip_5
       verify_error_check
     when "N"
       verify
@@ -140,9 +140,7 @@ class StandardizeAddress::CLI
   end
 
   def verify_error_check
-    @address.set_attributes
-
-    if @address.any_error?
+    if @request.any_error?
       menu_options = ["Y", "", "N"]
       user_option = "!"
       until valid_option?(user_option, menu_options)
@@ -166,7 +164,7 @@ class StandardizeAddress::CLI
   def error_message
     message = ["Error:", "The", "that you have entered was not found."]
 
-    case @address.number
+    case @request.error_code
     when "-2147219401"
       issue = "Street Address"
     when "-2147219400"
@@ -192,21 +190,21 @@ class StandardizeAddress::CLI
 
     case user_option
     when "Y", ""
-      @name = ""
-      until !@name.empty?
+      name = ""
+      until !name.empty?
         puts "Please enter a name to save this address under:".light_white
         #name = gets.strip.split(/(\W)/).map(&:capitalize).join#titleize
-        @name = gets.strip.upcase
+        name = gets.strip.upcase
       end
       spacer
 
-      name_address = {"Name": @name}.merge(address_hash)
+      address_hash = {name: name}.merge(@request.address)
       #Places :"Name" in front of the hash
 
-      StandardizeAddress::Address.new(name_address)
+      @address = StandardizeAddress::Address.new(address_hash)
 
       #ASK TO OVERWRITE IF IT EXISTS
-      puts "    Address saved under: #{@name.green}"
+      puts "    Address saved under: #{name.green}"
       spacer
       countdown_to_menu
     when "N"
@@ -218,29 +216,31 @@ class StandardizeAddress::CLI
     menu
   end
 
-  def address_hash
-    {
-      "Apt/Suite": @address.address_1,
-      "Street": @address.address_2,
-      "City": @address.city,
-      "State": @address.state,
-      "ZIP Code": @address.zip_5,
-      "ZIP + 4": @address.zip_4,
-      "Note": @address.return_text.split(": ")[1]
-    }
-  end
+  # def format_address
+  #   {
+  #     "Apt/Suite": @request.address_1,
+  #     "Street": @request.address_2,
+  #     "City": @request.city,
+  #     "State": @request.state,
+  #     "ZIP Code": @request.zip_5,
+  #     "ZIP + 4": @request.zip_4,
+  #     "Note": @request.return_text.split(": ")[1]
+  #   }
+  # end
 
   def display_address(index = 0)
     if @current_menu == "detail"
       address = StandardizeAddress::Address.all[index - 1]
     else
-      address = address_hash
+      address = @request.hash_response
     end
 
-    new_address = address.reject{ |key, value| value.to_s.empty? }
+    # new_address = address.reject{ |key, value| value.to_s.empty? }
 
-    new_address.each do |key, value|
-      spacing = " " * (longest_key(address_hash).first.length - key.length)
+    binding.pry
+
+    address.each do |key, value|
+      spacing = " " * (longest_key(@request.formatted_response).first.length - key.length)
 
       if key == "Apt/Suite"
         puts "    #{key}: #{value.green}"

@@ -27,7 +27,7 @@ class StandardizeAddress::Scraper
       "<City>#{@address[:city]}</City>",
       "<State>#{@address[:state]}</State>",
       "<Zip5>#{@address[:zip_5]}</Zip5>",
-      "<Zip4>#{@address[:zip_4]}</Zip4>",
+      "<Zip4></Zip4>",
       "</Address>"
     ]
   end
@@ -56,7 +56,11 @@ class StandardizeAddress::Scraper
     !xml_response.css("Number").text.empty?
   end
 
-  def address_hash
+  def error_code
+    xml_response.css("Number").text
+  end
+
+  def hash_response
     xml = xml_response
     {
       address_1: xml.css("Address1").text,
@@ -67,10 +71,23 @@ class StandardizeAddress::Scraper
       zip_4: xml.css("Zip4").text,
       return_text: xml.css("ReturnText").text,
       number: xml.css("Number").text
-    }
+    }.reject{ |key, value| value.to_s.empty? }
   end
 
-  def create_new_address
-    StandardizeAddress::Address.new(address_hash)
+  def formatted_response
+    hash = hash_response
+    {
+      "Apt/Suite": hash[:address_1],
+      "Street": hash[:address_2],
+      "City": hash[:city],
+      "State": hash[:state],
+      "ZIP Code": hash[:zip_5],
+      "ZIP + 4": hash[:zip_4],
+      "Note": hash[:return_text].split(": ")[1]
+    }.reject{ |key, value| value.to_s.empty? }
   end
+
+  # def create_new_address
+  #   StandardizeAddress::Address.new(address_hash)
+  # end
 end
