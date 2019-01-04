@@ -6,9 +6,9 @@ require "pry"
 module StandardizeAddress
   module Username
     def username
-      #INSERT YOUR USERNAME BETWEEN " " BELOW
-      "253VINCE6398"
-      #INSERT YOUR USERNAME BETWEEN " " ABOVE
+      #INSERT YOUR USERNAME BETWEEN "" BELOW
+      ""
+      #INSERT YOUR USERNAME BETWEEN "" ABOVE
     end
   end
 
