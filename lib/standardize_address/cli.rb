@@ -31,14 +31,14 @@ class StandardizeAddress::CLI
     user_option = "!"
     until valid_option?(user_option, menu_options)
       banner("ADDRESS STANDARDIZATION MENU")
-      puts "What would you like to do today?".light_white
-      spacer
       command("verify: Standardize an address.")
       command("list  : Displays a list of previously standardized addresses.")
       #puts "    track    : Track package status."
       #puts "    packages : Displays all previously tracked packages."
       command("exit  : Ends the program.")
       spacer
+      puts "What would you like to do today?".light_white
+      puts "Note: Pressing ENTER on most prompts will select the first option and the first letter will select that option.".light_black
       user_option = gets.strip.upcase
     end
 
@@ -61,7 +61,7 @@ class StandardizeAddress::CLI
     banner("ADDRESS STANDARDIZATION")
     puts "Corrects errors in street addresses including abbreviations and missing information and supplies ZIP Codes and ZIP Codes + 4.".green
     spacer
-    puts "To begin, please fill out the following:".green
+    puts "To begin, please enter the following:".green
     spacer
 
     address_2 = ""
@@ -110,7 +110,10 @@ class StandardizeAddress::CLI
       @address.city = city
       @address.state = state
       @address.zip_5 = zip_5
-      @request = StandardizeAddress::Scraper.new(@address)
+
+      request = StandardizeAddress::Scraper.new(@address)
+      request.update_address
+
       error_check
     when "N"
       verify
@@ -119,10 +122,10 @@ class StandardizeAddress::CLI
 
   #If an error is found: exit, retry or save address
   def error_check
-    proceed = @request.error_code.include?("80040B1A") ? false : true
+    proceed = @address.number.include?("80040B1A") ? false : true
 
     if proceed
-      if @request.any_error?
+      if !@address.number.empty?
         menu_options = ["Y", "", "N"]
         user_option = "!"
         until valid_option?(user_option, menu_options)
@@ -139,21 +142,20 @@ class StandardizeAddress::CLI
         when "N" then menu
         end
       else
-        @request.update_address
         save_address?
       end
     else
-      spacer
-      puts "    Username is incorrect or does not exist. Please double check your username inside '/lib/standardize_address.rb' and try again.".red
+      puts "    Username is incorrect or does not exist. Please double check the username inside '/lib/standardize_address.rb' and try again.".red
       spacer
     end
   end
 
-  #Returns an error message
+  #Returns an error message depending on error number/code
   def error_message
     message = ["Error:", "The", "that you have entered was not found."]
+    issue = ""
 
-    case @request.error_code
+    case @address.number
     when "-2147219401"
       issue = "Street Address"
     when "-2147219400"

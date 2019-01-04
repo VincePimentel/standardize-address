@@ -1,7 +1,7 @@
 class StandardizeAddress::Scraper
   include StandardizeAddress::Username
 
-  attr_accessor :address
+  attr_reader :address
 
   def initialize(address)
     @address = address
@@ -46,18 +46,6 @@ class StandardizeAddress::Scraper
 
   def xml_response
     Nokogiri::XML(open(xml_request))
-  end
-
-  def valid?
-    !xml_response.css("Number").text.include?("80040B1A")
-  end
-
-  def any_error?
-    !xml_response.css("Number").text.empty?
-  end
-
-  def error_code
-    xml_response.css("Number").text
   end
 
   def update_address
